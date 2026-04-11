@@ -1,0 +1,547 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AA000001 /* HealthLogSyncApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000001 /* HealthLogSyncApp.swift */; };
+		AA000002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000002 /* AppDelegate.swift */; };
+		AA000003 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000003 /* AppState.swift */; };
+		AA000004 /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000004 /* KeychainManager.swift */; };
+		AA000005 /* UserDefaultsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000005 /* UserDefaultsManager.swift */; };
+		AA000006 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000006 /* Models.swift */; };
+		AA000007 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000007 /* APIClient.swift */; };
+		AA000008 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000008 /* AuthService.swift */; };
+		AA000009 /* SyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000009 /* SyncService.swift */; };
+		AA000010 /* AnalysisService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000010 /* AnalysisService.swift */; };
+		AA000011 /* HealthKitTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000011 /* HealthKitTypes.swift */; };
+		AA000012 /* HealthKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000012 /* HealthKitManager.swift */; };
+		AA000013 /* SyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000013 /* SyncManager.swift */; };
+		AA000014 /* BackgroundTaskManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000014 /* BackgroundTaskManager.swift */; };
+		AA000015 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000015 /* RootView.swift */; };
+		AA000016 /* AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000016 /* AuthView.swift */; };
+		AA000017 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000017 /* AuthViewModel.swift */; };
+		AA000018 /* HealthKitPermissionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000018 /* HealthKitPermissionView.swift */; };
+		AA000019 /* InitialSyncView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000019 /* InitialSyncView.swift */; };
+		AA000020 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000020 /* MainTabView.swift */; };
+		AA000021 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000021 /* DashboardView.swift */; };
+		AA000022 /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000022 /* DashboardViewModel.swift */; };
+		AA000023 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000023 /* HistoryView.swift */; };
+		AA000024 /* HistoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000024 /* HistoryViewModel.swift */; };
+		AA000025 /* ReportDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000025 /* ReportDetailView.swift */; };
+		AA000026 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000026 /* SettingsView.swift */; };
+		AA000027 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AB000027 /* Assets.xcassets */; };
+		AA000028 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB000028 /* HealthKit.framework */; };
+		AA000029 /* BackgroundTasks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB000029 /* BackgroundTasks.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		AB000001 /* HealthLogSyncApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthLogSyncApp.swift; sourceTree = "<group>"; };
+		AB000002 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		AB000003 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		AB000004 /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
+		AB000005 /* UserDefaultsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsManager.swift; sourceTree = "<group>"; };
+		AB000006 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		AB000007 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		AB000008 /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+		AB000009 /* SyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncService.swift; sourceTree = "<group>"; };
+		AB000010 /* AnalysisService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisService.swift; sourceTree = "<group>"; };
+		AB000011 /* HealthKitTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitTypes.swift; sourceTree = "<group>"; };
+		AB000012 /* HealthKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitManager.swift; sourceTree = "<group>"; };
+		AB000013 /* SyncManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncManager.swift; sourceTree = "<group>"; };
+		AB000014 /* BackgroundTaskManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundTaskManager.swift; sourceTree = "<group>"; };
+		AB000015 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		AB000016 /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
+		AB000017 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
+		AB000018 /* HealthKitPermissionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitPermissionView.swift; sourceTree = "<group>"; };
+		AB000019 /* InitialSyncView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitialSyncView.swift; sourceTree = "<group>"; };
+		AB000020 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		AB000021 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		AB000022 /* DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardViewModel.swift; sourceTree = "<group>"; };
+		AB000023 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
+		AB000024 /* HistoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryViewModel.swift; sourceTree = "<group>"; };
+		AB000025 /* ReportDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportDetailView.swift; sourceTree = "<group>"; };
+		AB000026 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		AB000027 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AB000028 /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
+		AB000029 /* BackgroundTasks.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BackgroundTasks.framework; path = System/Library/Frameworks/BackgroundTasks.framework; sourceTree = SDKROOT; };
+		AB000030 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AB000031 /* HealthLogSync.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HealthLogSync.entitlements; sourceTree = "<group>"; };
+		AC000001 /* HealthLogSync.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HealthLogSync.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		FA000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000028 /* HealthKit.framework in Frameworks */,
+				AA000029 /* BackgroundTasks.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		GR000000 /* Root */ = {
+			isa = PBXGroup;
+			children = (
+				GR000001 /* HealthLogSync */,
+				GR000010 /* Frameworks */,
+				GR000011 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		GR000001 /* HealthLogSync */ = {
+			isa = PBXGroup;
+			children = (
+				GR000002 /* App */,
+				GR000003 /* Storage */,
+				GR000004 /* Services */,
+				GR000005 /* Background */,
+				GR000006 /* Features */,
+				GR000009 /* Resources */,
+			);
+			path = HealthLogSync;
+			sourceTree = "<group>";
+		};
+		GR000002 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				AB000001 /* HealthLogSyncApp.swift */,
+				AB000002 /* AppDelegate.swift */,
+				AB000003 /* AppState.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		GR000003 /* Storage */ = {
+			isa = PBXGroup;
+			children = (
+				AB000004 /* KeychainManager.swift */,
+				AB000005 /* UserDefaultsManager.swift */,
+			);
+			path = Storage;
+			sourceTree = "<group>";
+		};
+		GR000004 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				GR000004A /* API */,
+				GR000004B /* HealthKit */,
+				GR000004C /* Sync */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		GR000004A /* API */ = {
+			isa = PBXGroup;
+			children = (
+				AB000006 /* Models.swift */,
+				AB000007 /* APIClient.swift */,
+				AB000008 /* AuthService.swift */,
+				AB000009 /* SyncService.swift */,
+				AB000010 /* AnalysisService.swift */,
+			);
+			path = API;
+			sourceTree = "<group>";
+		};
+		GR000004B /* HealthKit */ = {
+			isa = PBXGroup;
+			children = (
+				AB000011 /* HealthKitTypes.swift */,
+				AB000012 /* HealthKitManager.swift */,
+			);
+			path = HealthKit;
+			sourceTree = "<group>";
+		};
+		GR000004C /* Sync */ = {
+			isa = PBXGroup;
+			children = (
+				AB000013 /* SyncManager.swift */,
+			);
+			path = Sync;
+			sourceTree = "<group>";
+		};
+		GR000005 /* Background */ = {
+			isa = PBXGroup;
+			children = (
+				AB000014 /* BackgroundTaskManager.swift */,
+			);
+			path = Background;
+			sourceTree = "<group>";
+		};
+		GR000006 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				GR000006A /* Auth */,
+				GR000006B /* Dashboard */,
+				GR000006C /* History */,
+				GR000006D /* Settings */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		GR000006A /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				AB000015 /* RootView.swift */,
+				AB000016 /* AuthView.swift */,
+				AB000017 /* AuthViewModel.swift */,
+				AB000018 /* HealthKitPermissionView.swift */,
+				AB000019 /* InitialSyncView.swift */,
+			);
+			path = Auth;
+			sourceTree = "<group>";
+		};
+		GR000006B /* Dashboard */ = {
+			isa = PBXGroup;
+			children = (
+				AB000020 /* MainTabView.swift */,
+				AB000021 /* DashboardView.swift */,
+				AB000022 /* DashboardViewModel.swift */,
+			);
+			path = Dashboard;
+			sourceTree = "<group>";
+		};
+		GR000006C /* History */ = {
+			isa = PBXGroup;
+			children = (
+				AB000023 /* HistoryView.swift */,
+				AB000024 /* HistoryViewModel.swift */,
+				AB000025 /* ReportDetailView.swift */,
+			);
+			path = History;
+			sourceTree = "<group>";
+		};
+		GR000006D /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				AB000026 /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		GR000009 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				AB000027 /* Assets.xcassets */,
+				AB000030 /* Info.plist */,
+				AB000031 /* HealthLogSync.entitlements */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		GR000010 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				AB000028 /* HealthKit.framework */,
+				AB000029 /* BackgroundTasks.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		GR000011 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AC000001 /* HealthLogSync.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		TG000001 /* HealthLogSync */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = XC000002 /* Build configuration list for PBXNativeTarget "HealthLogSync" */;
+			buildPhases = (
+				FA000001 /* Frameworks */,
+				FB000001 /* Sources */,
+				FC000001 /* Resources */,
+			);
+			buildRules = ();
+			dependencies = ();
+			name = HealthLogSync;
+			productName = HealthLogSync;
+			productReference = AC000001 /* HealthLogSync.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		PR000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					TG000001 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = XC000001 /* Build configuration list for PBXProject "HealthLogSync" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = GR000000 /* Root */;
+			productRefGroup = GR000011 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				TG000001 /* HealthLogSync */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		FC000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000027 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		FB000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000001 /* HealthLogSyncApp.swift in Sources */,
+				AA000002 /* AppDelegate.swift in Sources */,
+				AA000003 /* AppState.swift in Sources */,
+				AA000004 /* KeychainManager.swift in Sources */,
+				AA000005 /* UserDefaultsManager.swift in Sources */,
+				AA000006 /* Models.swift in Sources */,
+				AA000007 /* APIClient.swift in Sources */,
+				AA000008 /* AuthService.swift in Sources */,
+				AA000009 /* SyncService.swift in Sources */,
+				AA000010 /* AnalysisService.swift in Sources */,
+				AA000011 /* HealthKitTypes.swift in Sources */,
+				AA000012 /* HealthKitManager.swift in Sources */,
+				AA000013 /* SyncManager.swift in Sources */,
+				AA000014 /* BackgroundTaskManager.swift in Sources */,
+				AA000015 /* RootView.swift in Sources */,
+				AA000016 /* AuthView.swift in Sources */,
+				AA000017 /* AuthViewModel.swift in Sources */,
+				AA000018 /* HealthKitPermissionView.swift in Sources */,
+				AA000019 /* InitialSyncView.swift in Sources */,
+				AA000020 /* MainTabView.swift in Sources */,
+				AA000021 /* DashboardView.swift in Sources */,
+				AA000022 /* DashboardViewModel.swift in Sources */,
+				AA000023 /* HistoryView.swift in Sources */,
+				AA000024 /* HistoryViewModel.swift in Sources */,
+				AA000025 /* ReportDetailView.swift in Sources */,
+				AA000026 /* SettingsView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		XC000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_CYCLE = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		XC000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_CYCLE = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		XC000005 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = HealthLogSync/Resources/HealthLogSync.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = HealthLogSync/Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.healthlogsync.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		XC000006 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = HealthLogSync/Resources/HealthLogSync.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = HealthLogSync/Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.healthlogsync.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		XC000001 /* Build configuration list for PBXProject "HealthLogSync" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				XC000003 /* Debug */,
+				XC000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		XC000002 /* Build configuration list for PBXNativeTarget "HealthLogSync" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				XC000005 /* Debug */,
+				XC000006 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = PR000001 /* Project object */;
+}
