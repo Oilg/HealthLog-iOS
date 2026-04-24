@@ -8,21 +8,36 @@ final class AuthService {
         let response: AuthResponse = try await APIClient.shared.request(
             path: "/api/v1/auth/login",
             method: "POST",
-            body: AuthRequest(email: email, password: password),
+            body: LoginRequest(login: email, password: password),
             requiresAuth: false
         )
         saveTokens(response)
+        UserDefaultsManager.shared.userEmail = response.user.email
     }
 
-    func register(email: String, password: String) async throws {
+    func register(
+        firstName: String,
+        lastName: String,
+        sex: String,
+        email: String,
+        phone: String,
+        password: String
+    ) async throws {
         let response: AuthResponse = try await APIClient.shared.request(
             path: "/api/v1/auth/register",
             method: "POST",
-            body: RegisterRequest(email: email, password: password),
+            body: RegisterRequest(
+                firstName: firstName,
+                lastName: lastName,
+                sex: sex,
+                email: email,
+                phone: phone,
+                password: password
+            ),
             requiresAuth: false
         )
         saveTokens(response)
-        UserDefaultsManager.shared.userEmail = email
+        UserDefaultsManager.shared.userEmail = response.user.email
     }
 
     func logout() async throws {
@@ -45,8 +60,8 @@ final class AuthService {
     }
 
     private func saveTokens(_ response: AuthResponse) {
-        KeychainManager.shared.save(response.accessToken, for: .accessToken)
-        KeychainManager.shared.save(response.refreshToken, for: .refreshToken)
+        KeychainManager.shared.save(response.tokens.accessToken, for: .accessToken)
+        KeychainManager.shared.save(response.tokens.refreshToken, for: .refreshToken)
     }
 }
 

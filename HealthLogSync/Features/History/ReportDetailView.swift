@@ -58,8 +58,8 @@ struct ReportDetailView: View {
     private var periodText: String {
         let fmt = ISO8601DateFormatter()
         fmt.formatOptions = [.withInternetDateTime]
-        guard let from = fmt.date(from: report.periodFrom),
-              let to = fmt.date(from: report.periodTo) else { return "" }
+        guard let rawFrom = report.periodFrom, let rawTo = report.periodTo,
+              let from = fmt.date(from: rawFrom), let to = fmt.date(from: rawTo) else { return "" }
         return "\(from.formatted(date: .long, time: .shortened)) —\n\(to.formatted(date: .long, time: .shortened))"
     }
 }
