@@ -76,8 +76,11 @@ final class APIClient {
                 throw APIClientError.serverError(apiError?.detail ?? "Ошибка сервера \(http.statusCode)")
             }
 
+            // 204 No Content — decode from empty JSON object
+            let bodyData = http.statusCode == 204 ? Data("{}".utf8) : data
+
             do {
-                return try decoder.decode(T.self, from: data)
+                return try decoder.decode(T.self, from: bodyData)
             } catch {
                 throw APIClientError.decodingError(error)
             }
@@ -101,7 +104,7 @@ final class APIClient {
         guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
             return false
         }
-        let tokens = try decoder.decode(AuthResponse.self, from: data)
+        let tokens = try decoder.decode(TokenResponse.self, from: data)
         KeychainManager.shared.save(tokens.accessToken, for: .accessToken)
         KeychainManager.shared.save(tokens.refreshToken, for: .refreshToken)
         return true
