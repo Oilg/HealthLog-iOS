@@ -59,8 +59,9 @@ final class SyncManager: ObservableObject {
             let calendar = Calendar.current
             let to = Date()
 
+            let earliestDate = await HealthKitManager.shared.earliestDataDate()
             let startPoint = UserDefaultsManager.shared.initialSyncProgress
-                ?? (await HealthKitManager.shared.earliestDataDate())
+                ?? earliestDate
                 ?? to.addingTimeInterval(-deltaSyncWindow)
 
             var batchStart = startPoint
