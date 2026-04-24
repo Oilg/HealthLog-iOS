@@ -48,7 +48,10 @@ private struct SyncStatusCard: View {
             }
 
             Button {
-                Task { await syncManager.runDeltaSync() }
+                Task {
+                    syncManager.resetState()
+                    await syncManager.runDeltaSync()
+                }
             } label: {
                 Group {
                     if case .syncing = syncManager.state {
@@ -146,10 +149,19 @@ private struct AnalysisReportCard: View {
     }
 
     private func formattedDate(_ iso: String) -> String {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime]
-        guard let date = formatter.date(from: iso) else { return iso }
-        return date.formatted(date: .abbreviated, time: .shortened)
+        let iso8601 = ISO8601DateFormatter()
+        iso8601.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = iso8601.date(from: iso) {
+            return date.formatted(date: .abbreviated, time: .shortened)
+        }
+        // Backend may return naive datetime without timezone offset
+        let df = DateFormatter()
+        df.locale = Locale(identifier: "en_US_POSIX")
+        df.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
+        if let date = df.date(from: iso) {
+            return date.formatted(date: .abbreviated, time: .shortened)
+        }
+        return iso
     }
 }
 
