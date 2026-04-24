@@ -8,9 +8,5 @@
 	<array>
 		<string>health-records</string>
 	</array>
-	<key>com.apple.developer.background-task-scheduler-permitted-identifiers</key>
-	<array>
-		<string>com.healthlogsync.dailysync</string>
-	</array>
 </dict>
 </plist>
