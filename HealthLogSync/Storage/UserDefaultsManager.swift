@@ -6,6 +6,7 @@ enum UserDefaultsKey: String {
     case initialSyncProgress = "initialSyncProgress"
     case userId = "userId"
     case userEmail = "userEmail"
+    case healthKitAuthorized = "healthKitAuthorized"
 }
 
 final class UserDefaultsManager {
@@ -38,11 +39,17 @@ final class UserDefaultsManager {
         set { defaults.set(newValue, forKey: UserDefaultsKey.userEmail.rawValue) }
     }
 
+    var healthKitAuthorized: Bool {
+        get { defaults.bool(forKey: UserDefaultsKey.healthKitAuthorized.rawValue) }
+        set { defaults.set(newValue, forKey: UserDefaultsKey.healthKitAuthorized.rawValue) }
+    }
+
     func clearUserData() {
         userId = nil
         userEmail = nil
         lastSyncAt = nil
         initialSyncCompleted = false
         initialSyncProgress = nil
+        healthKitAuthorized = false
     }
 }

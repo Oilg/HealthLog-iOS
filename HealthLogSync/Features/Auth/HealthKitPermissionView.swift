@@ -69,6 +69,7 @@ struct HealthKitPermissionView: View {
         errorMessage = nil
         do {
             try await HealthKitManager.shared.requestAuthorization()
+            UserDefaultsManager.shared.healthKitAuthorized = true
             appState.isHealthKitAuthorized = true
         } catch {
             errorMessage = error.localizedDescription

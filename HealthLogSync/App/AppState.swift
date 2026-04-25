@@ -3,12 +3,13 @@ import Foundation
 @MainActor
 final class AppState: ObservableObject {
     @Published var isLoggedIn: Bool
-    @Published var isHealthKitAuthorized = false
+    @Published var isHealthKitAuthorized: Bool
     @Published var initialSyncCompleted: Bool
 
     init() {
         isLoggedIn = AuthService.shared.isLoggedIn
         initialSyncCompleted = UserDefaultsManager.shared.initialSyncCompleted
+        isHealthKitAuthorized = UserDefaultsManager.shared.healthKitAuthorized
     }
 
     func onLoginSuccess() {
