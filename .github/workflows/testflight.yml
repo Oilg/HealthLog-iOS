@@ -1,0 +1,36 @@
+name: Deploy to TestFlight
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "HealthLogSync/**"
+      - "HealthLogSync.xcodeproj/**"
+      - "fastlane/**"
+      - "Gemfile"
+
+jobs:
+  deploy:
+    runs-on: macos-15
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.3.app
+
+      - name: Run Fastlane beta lane
+        env:
+          ASC_KEY_ID:       ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID:    ${{ secrets.ASC_ISSUER_ID }}
+          ASC_PRIVATE_KEY:  ${{ secrets.ASC_PRIVATE_KEY }}
+          MATCH_GIT_URL:    ${{ secrets.MATCH_GIT_URL }}
+          MATCH_PASSWORD:   ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+        run: bundle exec fastlane beta
