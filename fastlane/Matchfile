@@ -1,0 +1,4 @@
+git_url(ENV["MATCH_GIT_URL"])
+type("appstore")
+app_identifier("com.healthlogsync.app")
+team_id("WRWG8PTN39")
