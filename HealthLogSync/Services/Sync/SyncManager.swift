@@ -1,10 +1,20 @@
 import Foundation
 
-enum SyncState {
+enum SyncState: Equatable {
     case idle
     case syncing(progress: String)
     case success(recordsCount: Int)
     case failure(Error)
+
+    static func == (lhs: SyncState, rhs: SyncState) -> Bool {
+        switch (lhs, rhs) {
+        case (.idle, .idle): return true
+        case (.syncing(let l), .syncing(let r)): return l == r
+        case (.success(let l), .success(let r)): return l == r
+        case (.failure, .failure): return true
+        default: return false
+        }
+    }
 }
 
 @MainActor
@@ -49,8 +59,9 @@ final class SyncManager: ObservableObject {
             let calendar = Calendar.current
             let to = Date()
 
+            let earliestDate = await HealthKitManager.shared.earliestDataDate()
             let startPoint = UserDefaultsManager.shared.initialSyncProgress
-                ?? (await HealthKitManager.shared.earliestDataDate())
+                ?? earliestDate
                 ?? to.addingTimeInterval(-deltaSyncWindow)
 
             var batchStart = startPoint
