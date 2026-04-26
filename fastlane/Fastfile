@@ -26,10 +26,10 @@ platform :ios do
 
     # Build
     build_app(
-      scheme:          "HealthLogSync",
-      xcodeproj:       "HealthLogSync.xcodeproj",
-      export_method:   "app-store",
-      clean:           true,
+      scheme:        "HealthLogSync",
+      project:       "HealthLogSync.xcodeproj",
+      export_method: "app-store",
+      clean:         true,
     )
 
     # Upload to TestFlight (don't wait for processing — saves CI time)
