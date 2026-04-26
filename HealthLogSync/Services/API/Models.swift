@@ -150,6 +150,16 @@ struct AnalysisHistoryResponse: Decodable {
     let total: Int
 }
 
+// MARK: - Device Token
+
+struct DeviceTokenRequest: Encodable {
+    let deviceToken: String
+
+    enum CodingKeys: String, CodingKey {
+        case deviceToken = "device_token"
+    }
+}
+
 // MARK: - Errors
 
 struct APIError: Decodable, Error {
