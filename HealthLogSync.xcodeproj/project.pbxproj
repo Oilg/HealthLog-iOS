@@ -86,7 +86,7 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		GR000000 /* Root */ = {
+		GR000000 = {
 			isa = PBXGroup;
 			children = (
 				GR000001 /* HealthLogSync */,
@@ -263,8 +263,10 @@
 				FB000001 /* Sources */,
 				FC000001 /* Resources */,
 			);
-			buildRules = ();
-			dependencies = ();
+			buildRules = (
+			);
+			dependencies = (
+			);
 			name = HealthLogSync;
 			productName = HealthLogSync;
 			productReference = AC000001 /* HealthLogSync.app */;
@@ -293,7 +295,7 @@
 				en,
 				Base,
 			);
-			mainGroup = GR000000 /* Root */;
+			mainGroup = GR000000;
 			productRefGroup = GR000011 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -473,9 +475,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = HealthLogSync/Resources/HealthLogSync.entitlements;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "Apple Distribution";
+					CODE_SIGN_STYLE = Manual;
+					PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.healthlogsync.app";
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = WRWG8PTN39;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = HealthLogSync/Resources/Info.plist;
@@ -499,9 +504,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = HealthLogSync/Resources/HealthLogSync.entitlements;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "Apple Distribution";
+					CODE_SIGN_STYLE = Manual;
+					PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.healthlogsync.app";
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = WRWG8PTN39;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = HealthLogSync/Resources/Info.plist;
@@ -541,7 +549,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
 	};
 	rootObject = PR000001 /* Project object */;
 }
