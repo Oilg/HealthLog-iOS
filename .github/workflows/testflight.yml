@@ -23,8 +23,8 @@ jobs:
           ruby-version: "3.3"
           bundler-cache: true
 
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_16.3.app
+      - name: Show Xcode version
+        run: xcodebuild -version
 
       - name: Run Fastlane beta lane
         env:
