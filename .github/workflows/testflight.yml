@@ -8,6 +8,7 @@ on:
       - "HealthLogSync.xcodeproj/**"
       - "fastlane/**"
       - "Gemfile"
+  workflow_dispatch:
 
 jobs:
   deploy:
