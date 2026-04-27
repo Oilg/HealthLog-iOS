@@ -59,6 +59,16 @@ final class AuthService {
         ) as EmptyResponse
     }
 
+    func deleteAccount() async throws {
+        _ = try await APIClient.shared.request(
+            path: "/api/v1/users/me",
+            method: "DELETE",
+            body: nil as String?,
+            requiresAuth: true
+        ) as EmptyResponse
+        clearSession()
+    }
+
     func clearSession() {
         KeychainManager.shared.deleteAll()
         UserDefaultsManager.shared.clearUserData()
