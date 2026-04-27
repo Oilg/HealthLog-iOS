@@ -50,6 +50,15 @@ final class AuthService {
         clearSession()
     }
 
+    func registerDeviceToken(_ token: String) async {
+        _ = try? await APIClient.shared.request(
+            path: "/api/v1/users/me/device-token",
+            method: "PUT",
+            body: DeviceTokenRequest(deviceToken: token),
+            requiresAuth: true
+        ) as EmptyResponse
+    }
+
     func clearSession() {
         KeychainManager.shared.deleteAll()
         UserDefaultsManager.shared.clearUserData()
