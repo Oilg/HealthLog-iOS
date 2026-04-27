@@ -50,4 +50,37 @@ platform :ios do
   ensure
     delete_keychain(name: keychain_name) rescue nil
   end
+
+  desc "Regenerate provisioning profiles (run once after adding a new capability)"
+  lane :renew_profiles do
+    api_key = app_store_connect_api_key(
+      key_id:                  ENV["ASC_KEY_ID"],
+      issuer_id:               ENV["ASC_ISSUER_ID"],
+      key_content:             ENV["ASC_PRIVATE_KEY"],
+      is_key_content_base64:   true,
+    )
+
+    keychain_name     = "ci_signing"
+    keychain_password = SecureRandom.hex(16)
+
+    create_keychain(
+      name:             keychain_name,
+      password:         keychain_password,
+      default_keychain: true,
+      unlock:           true,
+      timeout:          3600,
+      lock_when_sleeps: false,
+    )
+
+    match(
+      type:              "appstore",
+      readonly:          false,
+      force:             true,
+      api_key:           api_key,
+      keychain_name:     keychain_name,
+      keychain_password: keychain_password,
+    )
+  ensure
+    delete_keychain(name: keychain_name) rescue nil
+  end
 end

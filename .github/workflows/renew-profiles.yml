@@ -1,0 +1,27 @@
+name: Renew Provisioning Profiles
+
+on:
+  workflow_dispatch:
+
+jobs:
+  renew:
+    runs-on: macos-26
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+
+      - name: Renew profiles via Match
+        env:
+          ASC_KEY_ID:       ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID:    ${{ secrets.ASC_ISSUER_ID }}
+          ASC_PRIVATE_KEY:  ${{ secrets.ASC_PRIVATE_KEY }}
+          MATCH_GIT_URL:    ${{ secrets.MATCH_GIT_URL }}
+          MATCH_PASSWORD:   ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+        run: bundle exec fastlane renew_profiles
