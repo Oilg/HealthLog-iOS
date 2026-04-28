@@ -38,7 +38,7 @@ jobs:
       - name: Install SwiftFormat
         run: brew install swiftformat
       - name: Check formatting
-        run: swiftformat --lint HealthLogSync HealthLogSyncTests HealthLogSyncUITests
+        run: swiftformat HealthLogSync HealthLogSyncTests HealthLogSyncUITests --lint
 
   unit-tests:
     name: Unit tests + Coverage
