@@ -97,8 +97,8 @@ private struct SyncStatusCard: View {
                 .background(.blue.opacity(0.15))
                 .foregroundStyle(.blue)
                 .clipShape(Capsule())
-        case .success(let count):
-            Text("✓ \(count) записей")
+        case .success:
+            Text("✓ Синхронизировано")
                 .font(.caption2.bold())
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
@@ -140,7 +140,10 @@ private struct AnalysisReportCard: View {
                 }
             } else {
                 ForEach(report.risks) { risk in
-                    RiskRow(risk: risk)
+                    NavigationLink(destination: RiskDetailView(risk: risk)) {
+                        RiskRow(risk: risk)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
         }
@@ -184,13 +187,7 @@ private struct RiskRow: View {
         }
     }
 
-    private var severityColor: Color {
-        switch risk.severity {
-        case "high": return .red
-        case "moderate": return .orange
-        default: return .yellow
-        }
-    }
+    private var severityColor: Color { risk.severityColor }
 }
 
 private struct ErrorCard: View {

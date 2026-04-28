@@ -7,8 +7,14 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
         BackgroundTaskManager.shared.registerTasks()
+        BackgroundTaskManager.shared.scheduleDailySync()
         requestNotificationPermission()
         return true
+    }
+
+    func applicationWillEnterForeground(_ application: UIApplication) {
+        // Reschedule in case the app missed the last scheduled window while terminated.
+        BackgroundTaskManager.shared.scheduleDailySync()
     }
 
     private func requestNotificationPermission() {
