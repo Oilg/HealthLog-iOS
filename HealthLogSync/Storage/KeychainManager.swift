@@ -14,14 +14,14 @@ final class KeychainManager {
         let data = Data(value.utf8)
         let query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,
-            kSecAttrAccount: key.rawValue
+            kSecAttrAccount: key.rawValue,
         ]
         SecItemDelete(query as CFDictionary)
         let attributes: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,
             kSecAttrAccount: key.rawValue,
             kSecValueData: data,
-            kSecAttrAccessible: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+            kSecAttrAccessible: kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
         ]
         SecItemAdd(attributes as CFDictionary, nil)
     }
@@ -31,7 +31,7 @@ final class KeychainManager {
             kSecClass: kSecClassGenericPassword,
             kSecAttrAccount: key.rawValue,
             kSecReturnData: true,
-            kSecMatchLimit: kSecMatchLimitOne
+            kSecMatchLimit: kSecMatchLimitOne,
         ]
         var result: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
@@ -42,7 +42,7 @@ final class KeychainManager {
     func delete(_ key: KeychainKey) {
         let query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,
-            kSecAttrAccount: key.rawValue
+            kSecAttrAccount: key.rawValue,
         ]
         SecItemDelete(query as CFDictionary)
     }

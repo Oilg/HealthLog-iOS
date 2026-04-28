@@ -60,7 +60,7 @@ struct InitialSyncView: View {
             Spacer()
         }
         .onChange(of: syncManager.isInitialSyncRunning) { _, running in
-            if !running && UserDefaultsManager.shared.initialSyncCompleted {
+            if !running, UserDefaultsManager.shared.initialSyncCompleted {
                 appState.onInitialSyncCompleted()
             }
         }

@@ -1,0 +1,8 @@
+project: HealthLogSync.xcodeproj
+schemes:
+  - HealthLogSync
+targets:
+  - HealthLogSync
+quiet: false
+format: xcode
+retain_codable_properties: true

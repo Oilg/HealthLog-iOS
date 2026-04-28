@@ -2,7 +2,6 @@ import XCTest
 @testable import HealthLogSync
 
 final class AnalysisReportTests: XCTestCase {
-
     // MARK: - Decoding
 
     func test_decoding_withPeriodDates() throws {
@@ -13,7 +12,7 @@ final class AnalysisReportTests: XCTestCase {
             "period_to":   "2026-04-28T10:00:00",
             "risks": []
         }
-        """.data(using: .utf8)!
+        """.data(using: .utf8) ?? Data()
 
         let report = try JSONDecoder().decode(AnalysisReport.self, from: json)
         XCTAssertNotNil(report.periodFrom)
@@ -26,7 +25,7 @@ final class AnalysisReportTests: XCTestCase {
             "analyzed_at": "2026-04-28T10:00:00",
             "risks": []
         }
-        """.data(using: .utf8)!
+        """.data(using: .utf8) ?? Data()
 
         let report = try JSONDecoder().decode(AnalysisReport.self, from: json)
         XCTAssertNil(report.periodFrom)
@@ -76,7 +75,7 @@ final class AnalysisReportTests: XCTestCase {
             "period_to":   "2026-04-28T10:00:00",
             "risks": \(risks)
         }
-        """.data(using: .utf8)!
+        """.data(using: .utf8) ?? Data()
         return try JSONDecoder().decode(AnalysisReport.self, from: json)
     }
 }

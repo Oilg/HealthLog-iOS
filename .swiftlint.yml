@@ -1,0 +1,39 @@
+excluded:
+  - HealthLogSync.xcodeproj
+  - .build
+
+opt_in_rules:
+  - redundant_string_enum_value
+  - sorted_imports
+  - vertical_whitespace_closing_braces
+
+disabled_rules:
+  - trailing_comma           # SwiftFormat owns formatting
+  - cyclomatic_complexity    # long switch statements are idiomatic Swift
+  - function_parameter_count # service initializers legitimately take many params
+
+line_length:
+  warning: 160
+  error: 320
+  ignores_comments: true
+  ignores_urls: true
+
+identifier_name:
+  min_length:
+    warning: 2
+    error: 1
+  excluded:
+    - id
+    - to
+    - df
+    - ok
+    - tz
+    - lhs
+    - rhs
+
+type_name:
+  min_length: 3
+
+file_length:
+  warning: 400
+  error: 600

@@ -15,7 +15,7 @@ final class DashboardViewModel: ObservableObject {
         reportError = nil
         do {
             latestReport = try await AnalysisService.shared.fetchLatest()
-        } catch APIClientError.serverError(let msg) where msg.contains("404") || msg.contains("не найден") {
+        } catch let APIClientError.serverError(msg) where msg.contains("404") || msg.contains("не найден") {
             latestReport = nil
         } catch {
             reportError = error.localizedDescription

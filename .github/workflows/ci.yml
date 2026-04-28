@@ -8,37 +8,119 @@ on:
     paths:
       - "HealthLogSync/**"
       - "HealthLogSyncTests/**"
+      - "HealthLogSyncUITests/**"
       - "HealthLogSync.xcodeproj/**"
+      - ".swiftlint.yml"
+      - ".swiftformat"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  test:
-    name: Build & Test
+  lint:
+    name: Lint (SwiftLint)
     runs-on: macos-26
-    timeout-minutes: 30
-
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - name: Install SwiftLint
+        run: brew install swiftlint
+      - name: Run SwiftLint
+        run: swiftlint lint --reporter github-actions-logging
 
-      - name: Show Xcode version
-        run: xcodebuild -version
+  format:
+    name: Format check (SwiftFormat)
+    runs-on: macos-26
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install SwiftFormat
+        run: brew install swiftformat
+      - name: Check formatting
+        run: swiftformat --lint HealthLogSync HealthLogSyncTests HealthLogSyncUITests
 
-      - name: Run unit tests
+  unit-tests:
+    name: Unit tests + Coverage
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run unit tests with coverage
         run: |
           xcodebuild test \
-            -project HealthLogSync.xcodeproj \
             -scheme HealthLogSyncTests \
+            -project HealthLogSync.xcodeproj \
             -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            ONLY_ACTIVE_ARCH=YES \
-            | grep -E "Test (Suite|Case)|error:|Executed|passed|failed" || true
+            -enableCodeCoverage YES \
+            -resultBundlePath TestResults.xcresult \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+      - name: Check coverage gate (≥ 60%)
+        run: |
+          COVERAGE=$(xcrun xccov view --report --only-targets TestResults.xcresult \
+            2>/dev/null | awk '/HealthLogSync\.app/ {gsub(/%/,""); print $NF}')
+          echo "Coverage: ${COVERAGE:-unknown}%"
+          if [ -n "$COVERAGE" ] && awk "BEGIN {exit !($COVERAGE < 60)}"; then
+            echo "::error::Coverage ${COVERAGE}% is below 60% gate"
+            exit 1
+          fi
 
-      - name: Verify build (release)
+  build-release:
+    name: Build (Release)
+    runs-on: macos-26
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build release
         run: |
           xcodebuild build \
-            -project HealthLogSync.xcodeproj \
             -scheme HealthLogSync \
+            -project HealthLogSync.xcodeproj \
             -destination 'generic/platform=iOS Simulator' \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            | grep -E "BUILD (SUCCEEDED|FAILED)|error:" || true
+            -configuration Release \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+
+  static-analyzer:
+    name: Static analyzer
+    runs-on: macos-26
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Xcode static analyzer
+        run: |
+          xcodebuild analyze \
+            -scheme HealthLogSync \
+            -project HealthLogSync.xcodeproj \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO \
+            2>&1 | tee analyze.log
+          if grep -qE "clang-diagnostic-|AnalyzerResult" analyze.log; then
+            echo "::error::Static analyzer found issues"
+            grep -E "error:|clang-diagnostic-" analyze.log || true
+            exit 1
+          fi
+
+  dead-code:
+    name: Dead code (Periphery)
+    runs-on: macos-26
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Periphery
+        run: brew install peripheryapp/periphery/periphery
+      - name: Scan for dead code
+        run: periphery scan --format github-actions
+
+  ui-tests:
+    name: UI tests
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run UI tests
+        run: |
+          xcodebuild test \
+            -scheme HealthLogSyncUITests \
+            -project HealthLogSync.xcodeproj \
+            -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO

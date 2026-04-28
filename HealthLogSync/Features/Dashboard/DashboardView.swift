@@ -2,7 +2,6 @@ import SwiftUI
 
 struct DashboardView: View {
     @StateObject private var viewModel = DashboardViewModel()
-    @ObservedObject private var syncManager = SyncManager.shared
 
     var body: some View {
         NavigationStack {
@@ -187,7 +186,9 @@ private struct RiskRow: View {
         }
     }
 
-    private var severityColor: Color { risk.severityColor }
+    private var severityColor: Color {
+        risk.severityColor
+    }
 }
 
 private struct ErrorCard: View {

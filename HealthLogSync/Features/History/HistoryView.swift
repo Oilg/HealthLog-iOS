@@ -6,7 +6,7 @@ struct HistoryView: View {
     var body: some View {
         NavigationStack {
             Group {
-                if viewModel.isLoading && viewModel.reports.isEmpty {
+                if viewModel.isLoading, viewModel.reports.isEmpty {
                     ProgressView("Загрузка...")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if viewModel.reports.isEmpty {
