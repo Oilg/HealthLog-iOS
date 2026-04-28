@@ -20,8 +20,4 @@ final class SyncService {
         UserDefaultsManager.shared.lastSyncAt = to
         return response
     }
-
-    func fetchStatus() async throws -> SyncStatusResponse {
-        try await APIClient.shared.request(path: "/api/v1/sync/status")
-    }
 }

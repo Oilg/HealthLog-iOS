@@ -77,11 +77,11 @@ struct HealthRecord: Encodable {
 
     enum CodingKeys: String, CodingKey {
         case type, value, unit, metadata
-        case sourceName = "sourceName"
-        case sourceVersion = "sourceVersion"
-        case creationDate = "creationDate"
-        case startDate = "startDate"
-        case endDate = "endDate"
+        case sourceName
+        case sourceVersion
+        case creationDate
+        case startDate
+        case endDate
         case instantaneousBpm = "instantaneous_bpm"
     }
 }
@@ -103,20 +103,13 @@ struct SyncResponse: Decodable {
     }
 }
 
-struct SyncStatusResponse: Decodable {
-    let lastSyncAt: String?
-    let lastSyncRecords: Int?
-
-    enum CodingKeys: String, CodingKey {
-        case lastSyncAt = "last_sync_at"
-        case lastSyncRecords = "last_sync_records"
-    }
-}
-
 // MARK: - Analysis
 
 struct AnalysisReport: Decodable, Identifiable {
-    var id: String { analyzedAt }
+    var id: String {
+        analyzedAt
+    }
+
     let analyzedAt: String
     let periodFrom: String?
     let periodTo: String?
@@ -131,7 +124,10 @@ struct AnalysisReport: Decodable, Identifiable {
 }
 
 struct RiskItem: Decodable, Identifiable {
-    var id: String { type }
+    var id: String {
+        type
+    }
+
     let type: String
     let severity: String
     let confidence: Double

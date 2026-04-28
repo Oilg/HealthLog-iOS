@@ -1,12 +1,12 @@
 import Foundation
 
 enum UserDefaultsKey: String {
-    case lastSyncAt = "lastSyncAt"
-    case initialSyncCompleted = "initialSyncCompleted"
-    case initialSyncProgress = "initialSyncProgress"
-    case userId = "userId"
-    case userEmail = "userEmail"
-    case healthKitAuthorized = "healthKitAuthorized"
+    case lastSyncAt
+    case initialSyncCompleted
+    case initialSyncProgress
+    case userId
+    case userEmail
+    case healthKitAuthorized
 }
 
 final class UserDefaultsManager {

@@ -9,8 +9,8 @@ enum SyncState: Equatable {
     static func == (lhs: SyncState, rhs: SyncState) -> Bool {
         switch (lhs, rhs) {
         case (.idle, .idle): return true
-        case (.syncing(let l), .syncing(let r)): return l == r
-        case (.success(let l), .success(let r)): return l == r
+        case let (.syncing(lhs), .syncing(rhs)): return lhs == rhs
+        case let (.success(lhs), .success(rhs)): return lhs == rhs
         case (.failure, .failure): return true
         default: return false
         }
@@ -27,7 +27,7 @@ final class SyncManager: ObservableObject {
 
     private let batchDuration: TimeInterval = 30 * 24 * 60 * 60
     private let deltaSyncWindow: TimeInterval = 7 * 24 * 60 * 60
-    private let uploadChunkSize = 9_000
+    private let uploadChunkSize = 9000
 
     private init() {}
 
@@ -48,7 +48,7 @@ final class SyncManager: ObservableObject {
 
             var totalSynced = 0
             for chunkStart in stride(from: 0, to: records.count, by: uploadChunkSize) {
-                let chunk = Array(records[chunkStart..<min(chunkStart + uploadChunkSize, records.count)])
+                let chunk = Array(records[chunkStart ..< min(chunkStart + uploadChunkSize, records.count)])
                 let response = try await SyncService.shared.uploadRecords(from: from, to: to, records: chunk)
                 totalSynced += response.syncedRecords
             }
@@ -85,7 +85,7 @@ final class SyncManager: ObservableObject {
 
                 if !records.isEmpty {
                     for chunkStart in stride(from: 0, to: records.count, by: uploadChunkSize) {
-                        let chunk = Array(records[chunkStart..<min(chunkStart + uploadChunkSize, records.count)])
+                        let chunk = Array(records[chunkStart ..< min(chunkStart + uploadChunkSize, records.count)])
                         _ = try await SyncService.shared.uploadRecords(from: batchStart, to: batchEnd, records: chunk)
                     }
                 }

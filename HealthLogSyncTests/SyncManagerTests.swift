@@ -3,7 +3,6 @@ import XCTest
 
 @MainActor
 final class SyncManagerTests: XCTestCase {
-
     // MARK: - SyncState equality
 
     func test_syncState_idle_equalsIdle() {

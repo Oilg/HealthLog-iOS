@@ -42,10 +42,18 @@
 		AA000027 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AB000027 /* Assets.xcassets */; };
 		AA000028 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB000028 /* HealthKit.framework */; };
 		AA000029 /* BackgroundTasks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB000029 /* BackgroundTasks.framework */; };
+		UI002 /* AppLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UI001 /* AppLaunchTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
 		FBD4303BD25C15E660CED0A2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = PR000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = TG000001;
+			remoteInfo = HealthLogSync;
+		};
+		UI003 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = PR000001 /* Project object */;
 			proxyType = 1;
@@ -94,6 +102,8 @@
 		AC000001 /* HealthLogSync.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HealthLogSync.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AFFFD044F9112EEB91F839EE /* SyncManagerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SyncManagerTests.swift; sourceTree = "<group>"; };
 		C8FF204168773B71D7C9A7C4 /* HealthLogSyncTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HealthLogSyncTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		UI001 /* AppLaunchTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppLaunchTests.swift; sourceTree = "<group>"; };
+		UI004 /* HealthLogSyncUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HealthLogSyncUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -111,6 +121,13 @@
 			files = (
 				AA000028 /* HealthKit.framework in Frameworks */,
 				AA000029 /* BackgroundTasks.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		UI007 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -143,7 +160,17 @@
 				GR000010 /* Frameworks */,
 				GR000011 /* Products */,
 				845BEE98D7CAB74E4ABC0948 /* HealthLogSyncTests */,
+				UI005 /* HealthLogSyncUITests */,
 			);
+			sourceTree = "<group>";
+		};
+		UI005 /* HealthLogSyncUITests */ = {
+			isa = PBXGroup;
+			children = (
+				UI001 /* AppLaunchTests.swift */,
+			);
+			name = HealthLogSyncUITests;
+			path = HealthLogSyncUITests;
 			sourceTree = "<group>";
 		};
 		GR000001 /* HealthLogSync */ = {
@@ -303,6 +330,7 @@
 			children = (
 				AC000001 /* HealthLogSync.app */,
 				C8FF204168773B71D7C9A7C4 /* HealthLogSyncTests.xctest */,
+				UI004 /* HealthLogSyncUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -345,6 +373,24 @@
 			productReference = AC000001 /* HealthLogSync.app */;
 			productType = "com.apple.product-type.application";
 		};
+		UI006 /* HealthLogSyncUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = UI013 /* Build configuration list for PBXNativeTarget "HealthLogSyncUITests" */;
+			buildPhases = (
+				UI008 /* Sources */,
+				UI007 /* Frameworks */,
+				UI009 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				UI010 /* PBXTargetDependency */,
+			);
+			name = HealthLogSyncUITests;
+			productName = HealthLogSyncUITests;
+			productReference = UI004 /* HealthLogSyncUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -375,6 +421,7 @@
 			targets = (
 				TG000001 /* HealthLogSync */,
 				4972519D69BDFD8386BB8205 /* HealthLogSyncTests */,
+				UI006 /* HealthLogSyncUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -389,6 +436,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		FCCF83FF8ACA54E23480A6AE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		UI009 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -443,6 +497,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		UI008 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				UI002 /* AppLaunchTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -451,6 +513,12 @@
 			name = HealthLogSync;
 			target = TG000001 /* HealthLogSync */;
 			targetProxy = FBD4303BD25C15E660CED0A2 /* PBXContainerItemProxy */;
+		};
+		UI010 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = HealthLogSync;
+			target = TG000001 /* HealthLogSync */;
+			targetProxy = UI003 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -664,6 +732,37 @@
 			};
 			name = Release;
 		};
+		UI011 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleName = HealthLogSyncUITests;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.healthlogsync.HealthLogSyncUITests;
+				PRODUCT_NAME = HealthLogSyncUITests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = HealthLogSync;
+			};
+			name = Debug;
+		};
+		UI012 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleName = HealthLogSyncUITests;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.healthlogsync.HealthLogSyncUITests;
+				PRODUCT_NAME = HealthLogSyncUITests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = HealthLogSync;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -690,6 +789,15 @@
 			buildConfigurations = (
 				XC000005 /* Debug */,
 				XC000006 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		UI013 /* Build configuration list for PBXNativeTarget "HealthLogSyncUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				UI011 /* Debug */,
+				UI012 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

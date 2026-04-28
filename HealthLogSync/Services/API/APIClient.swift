@@ -9,9 +9,9 @@ enum APIClientError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .unauthorized: return "Сессия истекла. Войдите снова."
-        case .serverError(let msg): return msg
+        case let .serverError(msg): return msg
         case .decodingError: return "Ошибка обработки данных."
-        case .networkError(let err): return err.localizedDescription
+        case let .networkError(err): return err.localizedDescription
         }
     }
 }
@@ -71,7 +71,7 @@ final class APIClient {
                 throw APIClientError.unauthorized
             }
 
-            guard (200..<300).contains(http.statusCode) else {
+            guard (200 ..< 300).contains(http.statusCode) else {
                 let apiError = try? decoder.decode(APIError.self, from: data)
                 throw APIClientError.serverError(apiError?.detail ?? "Ошибка сервера \(http.statusCode)")
             }
@@ -101,7 +101,7 @@ final class APIClient {
         request.httpBody = try encoder.encode(RefreshRequest(refreshToken: refreshToken))
 
         let (data, response) = try await session.data(for: request)
-        guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+        guard let http = response as? HTTPURLResponse, (200 ..< 300).contains(http.statusCode) else {
             return false
         }
         let tokens = try decoder.decode(TokenResponse.self, from: data)

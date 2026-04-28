@@ -1,18 +1,20 @@
-import HealthKit
 import Foundation
+import HealthKit
 
 final class HealthKitManager {
     static let shared = HealthKitManager()
     private let store = HKHealthStore()
     private let isoFormatter: ISO8601DateFormatter = {
-        let f = ISO8601DateFormatter()
-        f.formatOptions = [.withInternetDateTime]
-        return f
+        let fmt = ISO8601DateFormatter()
+        fmt.formatOptions = [.withInternetDateTime]
+        return fmt
     }()
 
     private init() {}
 
-    var isAvailable: Bool { HKHealthStore.isHealthDataAvailable() }
+    var isAvailable: Bool {
+        HKHealthStore.isHealthDataAvailable()
+    }
 
     func requestAuthorization() async throws {
         guard isAvailable else { return }
@@ -42,7 +44,7 @@ final class HealthKitManager {
         guard let type = HKQuantityType.quantityType(forIdentifier: .heartRate) else { return nil }
         return await withCheckedContinuation { continuation in
             let query = HKSampleQuery(sampleType: type, predicate: nil, limit: 1, sortDescriptors: [
-                NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)
+                NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true),
             ]) { _, samples, _ in
                 continuation.resume(returning: (samples?.first as? HKQuantitySample)?.startDate)
             }

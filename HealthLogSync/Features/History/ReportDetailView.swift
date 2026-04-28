@@ -102,6 +102,11 @@ private struct RiskDetailRow: View {
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
     }
 
-    private var severityColor: Color { risk.severityColor }
-    private var severityLabel: String { risk.severityLabel }
+    private var severityColor: Color {
+        risk.severityColor
+    }
+
+    private var severityLabel: String {
+        risk.severityLabel
+    }
 }

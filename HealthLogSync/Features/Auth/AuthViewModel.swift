@@ -15,7 +15,7 @@ final class AuthViewModel: ObservableObject {
     var isSubmitDisabled: Bool {
         if isLoading { return true }
         if email.isEmpty || password.isEmpty { return true }
-        if isRegistering && (firstName.isEmpty || lastName.isEmpty || phone.isEmpty) { return true }
+        if isRegistering, firstName.isEmpty || lastName.isEmpty || phone.isEmpty { return true }
         return false
     }
 

@@ -2,7 +2,6 @@ import XCTest
 @testable import HealthLogSync
 
 final class RiskItemTests: XCTestCase {
-
     // MARK: - JSON Decoding
 
     func test_decoding_mapsConditionToType() throws {
@@ -31,14 +30,14 @@ final class RiskItemTests: XCTestCase {
 
     func test_localizedName_allKnownTypes() throws {
         let cases: [(String, String)] = [
-            ("overload_recovery_risk",     "Перегрузка и недовосстановление"),
-            ("noise_exposure_risk",        "Шумовое воздействие"),
-            ("obesity_risk",               "Риск ожирения"),
-            ("sedentary_lifestyle_risk",   "Малоподвижный образ жизни"),
+            ("overload_recovery_risk", "Перегрузка и недовосстановление"),
+            ("noise_exposure_risk", "Шумовое воздействие"),
+            ("obesity_risk", "Риск ожирения"),
+            ("sedentary_lifestyle_risk", "Малоподвижный образ жизни"),
             ("insufficient_activity_risk", "Недостаточная активность"),
-            ("cardiometabolic_risk",       "Кардиометаболический профиль"),
-            ("metabolic_syndrome_risk",    "Метаболический синдром"),
-            ("cardiovascular_risk",        "Сердечно-сосудистый риск"),
+            ("cardiometabolic_risk", "Кардиометаболический профиль"),
+            ("metabolic_syndrome_risk", "Метаболический синдром"),
+            ("cardiovascular_risk", "Сердечно-сосудистый риск"),
             ("recovery_inefficiency_risk", "Неэффективное восстановление"),
         ]
         for (type, expected) in cases {
@@ -103,7 +102,7 @@ final class RiskItemTests: XCTestCase {
             "confidence": \(confidence),
             "interpretation": "\(interpretation)"
         }
-        """.data(using: .utf8)!
-        return try JSONDecoder().decode(RiskItem.self, from: json)
+        """
+        return try JSONDecoder().decode(RiskItem.self, from: Data(json.utf8))
     }
 }

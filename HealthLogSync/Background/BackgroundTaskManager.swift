@@ -10,7 +10,8 @@ final class BackgroundTaskManager {
 
     func registerTasks() {
         BGTaskScheduler.shared.register(forTaskWithIdentifier: syncTaskIdentifier, using: nil) { task in
-            self.handleSyncTask(task as! BGProcessingTask)
+            guard let processingTask = task as? BGProcessingTask else { return }
+            self.handleSyncTask(processingTask)
         }
     }
 
