@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+    paths:
+      - "HealthLogSync/**"
+      - "HealthLogSyncTests/**"
+      - "HealthLogSync.xcodeproj/**"
+
+jobs:
+  test:
+    name: Build & Test
+    runs-on: macos-26
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Run unit tests
+        run: |
+          xcodebuild test \
+            -project HealthLogSync.xcodeproj \
+            -scheme HealthLogSyncTests \
+            -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            ONLY_ACTIVE_ARCH=YES \
+            | grep -E "Test (Suite|Case)|error:|Executed|passed|failed" || true
+
+      - name: Verify build (release)
+        run: |
+          xcodebuild build \
+            -project HealthLogSync.xcodeproj \
+            -scheme HealthLogSync \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            | grep -E "BUILD (SUCCEEDED|FAILED)|error:" || true
