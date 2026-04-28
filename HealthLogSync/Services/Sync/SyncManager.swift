@@ -41,6 +41,7 @@ final class SyncManager: ObservableObject {
             let records = await HealthKitManager.shared.fetchRecords(from: from, to: to)
 
             if records.isEmpty {
+                UserDefaultsManager.shared.lastSyncAt = to
                 state = .success(recordsCount: 0)
                 return
             }

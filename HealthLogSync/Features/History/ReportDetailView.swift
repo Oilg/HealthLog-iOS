@@ -6,17 +6,19 @@ struct ReportDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Период анализа")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .textCase(.uppercase)
-                    Text(periodText)
-                        .font(.subheadline)
+                if !periodText.isEmpty {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Период анализа")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .textCase(.uppercase)
+                        Text(periodText)
+                            .font(.subheadline)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
                 }
-                .padding()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
 
                 if report.risks.isEmpty {
                     VStack(spacing: 12) {
@@ -37,7 +39,10 @@ struct ReportDetailView: View {
                             .font(.headline)
 
                         ForEach(report.risks) { risk in
-                            RiskDetailRow(risk: risk)
+                            NavigationLink(destination: RiskDetailView(risk: risk)) {
+                                RiskDetailRow(risk: risk)
+                            }
+                            .buttonStyle(.plain)
                         }
                     }
                 }
@@ -73,7 +78,7 @@ private struct RiskDetailRow: View {
                 Circle()
                     .fill(severityColor)
                     .frame(width: 10, height: 10)
-                Text(risk.type.replacingOccurrences(of: "_", with: " ").capitalized)
+                Text(risk.localizedName)
                     .font(.subheadline.bold())
                 Spacer()
                 Text(severityLabel)
@@ -97,19 +102,6 @@ private struct RiskDetailRow: View {
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
     }
 
-    private var severityColor: Color {
-        switch risk.severity {
-        case "high": return .red
-        case "moderate": return .orange
-        default: return .yellow
-        }
-    }
-
-    private var severityLabel: String {
-        switch risk.severity {
-        case "high": return "Высокий"
-        case "moderate": return "Средний"
-        default: return "Низкий"
-        }
-    }
+    private var severityColor: Color { risk.severityColor }
+    private var severityLabel: String { risk.severityLabel }
 }

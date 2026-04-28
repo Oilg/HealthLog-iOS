@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5B3B5BF8003E78AFF6CA3BA9 /* RiskDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7026337209B84C43608211A6 /* RiskDetailView.swift */; };
+		8A5467E33081FEB0687BC493 /* RiskItem+UI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 404970A78F4D95D27D740B8A /* RiskItem+UI.swift */; };
 		AA000001 /* HealthLogSyncApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000001 /* HealthLogSyncApp.swift */; };
 		AA000002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000002 /* AppDelegate.swift */; };
 		AA000003 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000003 /* AppState.swift */; };
@@ -39,6 +41,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		404970A78F4D95D27D740B8A /* RiskItem+UI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "RiskItem+UI.swift"; sourceTree = "<group>"; };
+		7026337209B84C43608211A6 /* RiskDetailView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RiskDetailView.swift; sourceTree = "<group>"; };
 		AB000001 /* HealthLogSyncApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthLogSyncApp.swift; sourceTree = "<group>"; };
 		AB000002 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		AB000003 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
@@ -145,6 +149,7 @@
 				AB000008 /* AuthService.swift */,
 				AB000009 /* SyncService.swift */,
 				AB000010 /* AnalysisService.swift */,
+				404970A78F4D95D27D740B8A /* RiskItem+UI.swift */,
 			);
 			path = API;
 			sourceTree = "<group>";
@@ -213,6 +218,7 @@
 				AB000023 /* HistoryView.swift */,
 				AB000024 /* HistoryViewModel.swift */,
 				AB000025 /* ReportDetailView.swift */,
+				7026337209B84C43608211A6 /* RiskDetailView.swift */,
 			);
 			path = History;
 			sourceTree = "<group>";
@@ -347,6 +353,8 @@
 				AA000024 /* HistoryViewModel.swift in Sources */,
 				AA000025 /* ReportDetailView.swift in Sources */,
 				AA000026 /* SettingsView.swift in Sources */,
+				8A5467E33081FEB0687BC493 /* RiskItem+UI.swift in Sources */,
+				5B3B5BF8003E78AFF6CA3BA9 /* RiskDetailView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -476,8 +484,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = HealthLogSync/Resources/HealthLogSync.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
-					CODE_SIGN_STYLE = Manual;
-					PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.healthlogsync.app";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = WRWG8PTN39;
@@ -492,6 +499,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.healthlogsync.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.healthlogsync.app";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -505,8 +513,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = HealthLogSync/Resources/HealthLogSync.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
-					CODE_SIGN_STYLE = Manual;
-					PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.healthlogsync.app";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = WRWG8PTN39;
@@ -521,6 +528,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.healthlogsync.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.healthlogsync.app";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
