@@ -7,8 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0B878BCD126388B8FF9820E4 /* RiskItemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C90C6F6EE1C06FD474EB45D /* RiskItemTests.swift */; };
+		287D4C70E21BF10F3C4009E1 /* AnalysisReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EAC2244420C407F12BB43A5 /* AnalysisReportTests.swift */; };
 		5B3B5BF8003E78AFF6CA3BA9 /* RiskDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7026337209B84C43608211A6 /* RiskDetailView.swift */; };
+		7E5F0BF52B00FDFBE48BA084 /* SyncManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFFFD044F9112EEB91F839EE /* SyncManagerTests.swift */; };
 		8A5467E33081FEB0687BC493 /* RiskItem+UI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 404970A78F4D95D27D740B8A /* RiskItem+UI.swift */; };
+		A7EAA16AF308F7F08F8D11D4 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04A55CF119C025914797547E /* Foundation.framework */; };
 		AA000001 /* HealthLogSyncApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000001 /* HealthLogSyncApp.swift */; };
 		AA000002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000002 /* AppDelegate.swift */; };
 		AA000003 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000003 /* AppState.swift */; };
@@ -40,9 +44,22 @@
 		AA000029 /* BackgroundTasks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB000029 /* BackgroundTasks.framework */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		FBD4303BD25C15E660CED0A2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = PR000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = TG000001;
+			remoteInfo = HealthLogSync;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		04A55CF119C025914797547E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		404970A78F4D95D27D740B8A /* RiskItem+UI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "RiskItem+UI.swift"; sourceTree = "<group>"; };
 		7026337209B84C43608211A6 /* RiskDetailView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RiskDetailView.swift; sourceTree = "<group>"; };
+		8EAC2244420C407F12BB43A5 /* AnalysisReportTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AnalysisReportTests.swift; sourceTree = "<group>"; };
+		9C90C6F6EE1C06FD474EB45D /* RiskItemTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RiskItemTests.swift; sourceTree = "<group>"; };
 		AB000001 /* HealthLogSyncApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthLogSyncApp.swift; sourceTree = "<group>"; };
 		AB000002 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		AB000003 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
@@ -75,9 +92,19 @@
 		AB000030 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AB000031 /* HealthLogSync.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HealthLogSync.entitlements; sourceTree = "<group>"; };
 		AC000001 /* HealthLogSync.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HealthLogSync.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AFFFD044F9112EEB91F839EE /* SyncManagerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SyncManagerTests.swift; sourceTree = "<group>"; };
+		C8FF204168773B71D7C9A7C4 /* HealthLogSyncTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HealthLogSyncTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		ED386B7D857BC44C030C2F7F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A7EAA16AF308F7F08F8D11D4 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		FA000001 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -90,12 +117,32 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		845BEE98D7CAB74E4ABC0948 /* HealthLogSyncTests */ = {
+			isa = PBXGroup;
+			children = (
+				9C90C6F6EE1C06FD474EB45D /* RiskItemTests.swift */,
+				8EAC2244420C407F12BB43A5 /* AnalysisReportTests.swift */,
+				AFFFD044F9112EEB91F839EE /* SyncManagerTests.swift */,
+			);
+			name = HealthLogSyncTests;
+			path = HealthLogSyncTests;
+			sourceTree = "<group>";
+		};
+		8B0E9C2AAA34AE3CB9FA0A4F /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				04A55CF119C025914797547E /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
 		GR000000 = {
 			isa = PBXGroup;
 			children = (
 				GR000001 /* HealthLogSync */,
 				GR000010 /* Frameworks */,
 				GR000011 /* Products */,
+				845BEE98D7CAB74E4ABC0948 /* HealthLogSyncTests */,
 			);
 			sourceTree = "<group>";
 		};
@@ -246,6 +293,7 @@
 			children = (
 				AB000028 /* HealthKit.framework */,
 				AB000029 /* BackgroundTasks.framework */,
+				8B0E9C2AAA34AE3CB9FA0A4F /* iOS */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -254,6 +302,7 @@
 			isa = PBXGroup;
 			children = (
 				AC000001 /* HealthLogSync.app */,
+				C8FF204168773B71D7C9A7C4 /* HealthLogSyncTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -261,6 +310,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		4972519D69BDFD8386BB8205 /* HealthLogSyncTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2A7F15F321A8BFA3379944DD /* Build configuration list for PBXNativeTarget "HealthLogSyncTests" */;
+			buildPhases = (
+				054B9CFA1EA86258EB511D14 /* Sources */,
+				ED386B7D857BC44C030C2F7F /* Frameworks */,
+				FCCF83FF8ACA54E23480A6AE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				122795D493CB1374773ADB5E /* PBXTargetDependency */,
+			);
+			name = HealthLogSyncTests;
+			productName = HealthLogSyncTests;
+			productReference = C8FF204168773B71D7C9A7C4 /* HealthLogSyncTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		TG000001 /* HealthLogSync */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = XC000002 /* Build configuration list for PBXNativeTarget "HealthLogSync" */;
@@ -307,6 +374,7 @@
 			projectRoot = "";
 			targets = (
 				TG000001 /* HealthLogSync */,
+				4972519D69BDFD8386BB8205 /* HealthLogSyncTests */,
 			);
 		};
 /* End PBXProject section */
@@ -320,9 +388,26 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		FCCF83FF8ACA54E23480A6AE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		054B9CFA1EA86258EB511D14 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0B878BCD126388B8FF9820E4 /* RiskItemTests.swift in Sources */,
+				287D4C70E21BF10F3C4009E1 /* AnalysisReportTests.swift in Sources */,
+				7E5F0BF52B00FDFBE48BA084 /* SyncManagerTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		FB000001 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -360,7 +445,51 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		122795D493CB1374773ADB5E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = HealthLogSync;
+			target = TG000001 /* HealthLogSync */;
+			targetProxy = FBD4303BD25C15E660CED0A2 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		62BD5D989B7C6D71EF38F53C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleName = HealthLogSyncTests;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.healthlogsync.HealthLogSyncTests;
+				PRODUCT_NAME = HealthLogSyncTests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HealthLogSync.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/HealthLogSync";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		67598349E5881490436F2395 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleName = HealthLogSyncTests;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.healthlogsync.HealthLogSyncTests;
+				PRODUCT_NAME = HealthLogSyncTests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HealthLogSync.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/HealthLogSync";
+			};
+			name = Debug;
+		};
 		XC000003 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -538,6 +667,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		2A7F15F321A8BFA3379944DD /* Build configuration list for PBXNativeTarget "HealthLogSyncTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				62BD5D989B7C6D71EF38F53C /* Release */,
+				67598349E5881490436F2395 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		XC000001 /* Build configuration list for PBXProject "HealthLogSync" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
