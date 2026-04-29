@@ -8,12 +8,12 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     ) -> Bool {
         BackgroundTaskManager.shared.registerTasks()
         BackgroundTaskManager.shared.scheduleDailySync()
+        UNUserNotificationCenter.current().delegate = self
         requestNotificationPermission()
         return true
     }
 
     func applicationWillEnterForeground(_: UIApplication) {
-        // Reschedule in case the app missed the last scheduled window while terminated.
         BackgroundTaskManager.shared.scheduleDailySync()
     }
 
@@ -43,17 +43,24 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         // APNs registration failed (simulator or missing entitlement) — silent push fallback to BGProcessingTask
     }
 
-    // MARK: - Silent push → trigger sync
+    // MARK: - Remote notifications (silent + analysis-ready)
 
     func application(
         _: UIApplication,
         didReceiveRemoteNotification userInfo: [AnyHashable: Any],
         fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
     ) {
-        guard let aps = userInfo["aps"] as? [String: Any],
-              let contentAvailable = aps["content-available"] as? Int,
-              contentAvailable == 1
-        else {
+        let aps = userInfo["aps"] as? [String: Any]
+        let contentAvailable = aps?["content-available"] as? Int
+        let type = userInfo["type"] as? String
+
+        if type == "analysis_ready" {
+            NotificationCenter.default.post(name: .analysisReady, object: nil)
+            completionHandler(.newData)
+            return
+        }
+
+        guard contentAvailable == 1 else {
             completionHandler(.noData)
             return
         }
@@ -63,4 +70,38 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
             completionHandler(.newData)
         }
     }
+}
+
+// MARK: - UNUserNotificationCenterDelegate
+
+extension AppDelegate: UNUserNotificationCenterDelegate {
+    /// Show notifications even when the app is in the foreground.
+    func userNotificationCenter(
+        _: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        let type = notification.request.content.userInfo["type"] as? String
+        if type == "analysis_ready" {
+            NotificationCenter.default.post(name: .analysisReady, object: nil)
+        }
+        completionHandler([.banner, .sound, .badge])
+    }
+
+    /// Handle tap on a delivered notification.
+    func userNotificationCenter(
+        _: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        let type = response.notification.request.content.userInfo["type"] as? String
+        if type == "analysis_ready" {
+            NotificationCenter.default.post(name: .analysisReady, object: nil)
+        }
+        completionHandler()
+    }
+}
+
+extension Notification.Name {
+    static let analysisReady = Notification.Name("com.healthlogsync.analysisReady")
 }
