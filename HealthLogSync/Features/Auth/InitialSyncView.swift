@@ -36,7 +36,9 @@ struct InitialSyncView: View {
                 Button {
                     Task {
                         await syncManager.runInitialSync()
-                        appState.onInitialSyncCompleted()
+                        if UserDefaultsManager.shared.initialSyncCompleted {
+                            appState.onInitialSyncCompleted()
+                        }
                     }
                 } label: {
                     Text("Начать загрузку")
