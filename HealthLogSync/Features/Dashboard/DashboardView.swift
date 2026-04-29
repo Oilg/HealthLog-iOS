@@ -8,7 +8,9 @@ struct DashboardView: View {
             ScrollView {
                 VStack(spacing: 20) {
                     SyncStatusCard(viewModel: viewModel)
-                    if let report = viewModel.latestReport {
+                    if viewModel.analysisInProgress {
+                        AnalysisInProgressCard()
+                    } else if let report = viewModel.latestReport {
                         AnalysisReportCard(report: report)
                     } else if viewModel.isLoadingReport {
                         ProgressView("Загрузка отчёта...")
@@ -73,7 +75,7 @@ private struct SyncStatusCard: View {
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
         .onChange(of: syncManager.state) { _, newState in
             if case .success = newState {
-                Task { await viewModel.loadLatestReport() }
+                viewModel.markAnalysisInProgress()
             }
         }
     }
@@ -113,6 +115,20 @@ private struct SyncStatusCard: View {
                 .foregroundStyle(.red)
                 .clipShape(Capsule())
         }
+    }
+}
+
+private struct AnalysisInProgressCard: View {
+    var body: some View {
+        HStack(spacing: 12) {
+            ProgressView()
+            Text("Анализ данных готовится...")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 }
 
