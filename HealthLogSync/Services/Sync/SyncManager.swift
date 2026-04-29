@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 enum SyncState: Equatable {
     case idle
@@ -62,6 +63,12 @@ final class SyncManager: ObservableObject {
         guard !isInitialSyncRunning else { return }
         isInitialSyncRunning = true
 
+        var bgTaskID = UIBackgroundTaskIdentifier.invalid
+        bgTaskID = UIApplication.shared.beginBackgroundTask(withName: "InitialSync") {
+            UIApplication.shared.endBackgroundTask(bgTaskID)
+            bgTaskID = .invalid
+        }
+
         do {
             let calendar = Calendar.current
             let to = Date()
@@ -102,6 +109,9 @@ final class SyncManager: ObservableObject {
             state = .failure(error)
         }
 
+        if bgTaskID != .invalid {
+            UIApplication.shared.endBackgroundTask(bgTaskID)
+        }
         isInitialSyncRunning = false
     }
 
