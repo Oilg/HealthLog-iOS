@@ -104,11 +104,11 @@ struct RiskDetailView: View {
                 .font(.subheadline.bold())
             if risk.dataPoints.isEmpty {
                 ForEach(info.healthDataTypes, id: \.self) { item in
-                    metricRow(label: item, value: nil)
+                    metricRow(label: item, value: nil, reference: nil)
                 }
             } else {
                 ForEach(Array(risk.dataPoints.enumerated()), id: \.offset) { _, point in
-                    metricRow(label: point.label, value: point.value)
+                    metricRow(label: point.label, value: point.value, reference: point.reference)
                 }
             }
         }
@@ -117,18 +117,27 @@ struct RiskDetailView: View {
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 
-    private func metricRow(label: String, value: String?) -> some View {
+    private func metricRow(label: String, value: String?, reference: String?) -> some View {
         HStack(spacing: 8) {
             Image(systemName: "checkmark.circle.fill")
                 .foregroundStyle(.blue)
                 .font(.caption)
             Text(label)
                 .font(.subheadline)
-            if let value {
+            if value != nil || reference != nil {
                 Spacer()
-                Text(value)
-                    .font(.subheadline.monospacedDigit())
-                    .foregroundStyle(.secondary)
+                VStack(alignment: .trailing, spacing: 2) {
+                    if let value {
+                        Text(value)
+                            .font(.subheadline.monospacedDigit())
+                            .foregroundStyle(.secondary)
+                    }
+                    if let reference {
+                        Text("цель: \(reference)")
+                            .font(.caption.monospacedDigit())
+                            .foregroundStyle(.tertiary)
+                    }
+                }
             }
         }
     }
