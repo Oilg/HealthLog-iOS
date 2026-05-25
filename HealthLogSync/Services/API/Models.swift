@@ -126,6 +126,7 @@ struct AnalysisReport: Decodable, Identifiable {
 struct DataPoint: Decodable, Hashable {
     let label: String
     let value: String
+    let reference: String?
 }
 
 struct RiskItem: Decodable, Identifiable {
