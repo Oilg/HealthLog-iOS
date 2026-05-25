@@ -1,5 +1,5 @@
-@testable import HealthLogSync
 import XCTest
+@testable import HealthLogSync
 
 @MainActor
 final class AuthViewModelTests: XCTestCase {

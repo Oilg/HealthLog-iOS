@@ -78,7 +78,6 @@ struct AuthView: View {
         }
     }
 
-    @ViewBuilder
     private var passwordField: some View {
         HStack(spacing: 8) {
             Group {
