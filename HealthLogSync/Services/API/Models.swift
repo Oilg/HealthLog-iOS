@@ -123,7 +123,7 @@ struct AnalysisReport: Decodable, Identifiable {
     }
 }
 
-struct DataPoint: Decodable {
+struct DataPoint: Decodable, Hashable {
     let label: String
     let value: String
 }

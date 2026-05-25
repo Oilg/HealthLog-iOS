@@ -107,7 +107,7 @@ struct RiskDetailView: View {
                     metricRow(label: item, value: nil)
                 }
             } else {
-                ForEach(risk.dataPoints, id: \.label) { point in
+                ForEach(Array(risk.dataPoints.enumerated()), id: \.offset) { _, point in
                     metricRow(label: point.label, value: point.value)
                 }
             }
