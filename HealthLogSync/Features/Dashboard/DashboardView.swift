@@ -172,9 +172,10 @@ private struct AnalysisReportCard: View {
         if let date = iso8601.date(from: iso) {
             return date.formatted(date: .abbreviated, time: .shortened)
         }
-        // Backend may return naive datetime without timezone offset
+        // Backend may return naive datetime without timezone offset — treat as UTC
         let df = DateFormatter()
         df.locale = Locale(identifier: "en_US_POSIX")
+        df.timeZone = TimeZone(identifier: "UTC")
         df.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
         if let date = df.date(from: iso) {
             return date.formatted(date: .abbreviated, time: .shortened)
