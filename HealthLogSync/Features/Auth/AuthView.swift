@@ -32,9 +32,7 @@ struct AuthView: View {
                             .autocapitalization(.none)
                             .textFieldStyle(.roundedBorder)
 
-                        SecureField("Пароль", text: $viewModel.password)
-                            .textContentType(viewModel.isRegistering ? .newPassword : .password)
-                            .textFieldStyle(.roundedBorder)
+                        passwordField
 
                         if let error = viewModel.errorMessage {
                             Text(error)
@@ -78,6 +76,41 @@ struct AuthView: View {
                 }
             }
         }
+    }
+
+    @ViewBuilder
+    private var passwordField: some View {
+        HStack(spacing: 8) {
+            Group {
+                if viewModel.isPasswordVisible {
+                    TextField("Пароль", text: $viewModel.password)
+                } else {
+                    SecureField("Пароль", text: $viewModel.password)
+                }
+            }
+            .textContentType(viewModel.isRegistering ? .newPassword : .password)
+            .autocapitalization(.none)
+            .disableAutocorrection(true)
+
+            Button {
+                viewModel.togglePasswordVisibility()
+            } label: {
+                Image(systemName: viewModel.isPasswordVisible ? "eye.slash" : "eye")
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(viewModel.isPasswordVisible ? "Скрыть пароль" : "Показать пароль")
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 7)
+        .background(
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .fill(Color(uiColor: .secondarySystemBackground))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .stroke(Color(uiColor: .systemGray4), lineWidth: 0.5)
+        )
     }
 
     @ViewBuilder
