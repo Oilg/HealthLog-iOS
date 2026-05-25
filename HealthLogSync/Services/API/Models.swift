@@ -123,6 +123,11 @@ struct AnalysisReport: Decodable, Identifiable {
     }
 }
 
+struct DataPoint: Decodable {
+    let label: String
+    let value: String
+}
+
 struct RiskItem: Decodable, Identifiable {
     var id: String {
         type
@@ -132,12 +137,23 @@ struct RiskItem: Decodable, Identifiable {
     let severity: String
     let confidence: Double
     let description: String
+    let dataPoints: [DataPoint]
 
     enum CodingKeys: String, CodingKey {
         case type = "condition"
         case severity
         case confidence
         case description = "interpretation"
+        case dataPoints = "data_points"
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        type = try container.decode(String.self, forKey: .type)
+        severity = try container.decode(String.self, forKey: .severity)
+        confidence = try container.decode(Double.self, forKey: .confidence)
+        description = try container.decode(String.self, forKey: .description)
+        dataPoints = (try? container.decode([DataPoint].self, forKey: .dataPoints)) ?? []
     }
 }
 
