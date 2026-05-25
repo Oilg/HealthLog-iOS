@@ -16,6 +16,7 @@ tools: [Agent, Read, Write, Edit, Bash]
 - `senior-developer` — реализация, unit и UI тесты
 - `tech-lead` — ревью кода и архитектурных решений
 - `security-reviewer` — безопасность медицинских данных, Keychain, HealthKit
+- `design-reviewer` — Apple HIG, доступность (VoiceOver, Dynamic Type), safe areas
 
 **QA:**
 - `senior-qa` — XCTest/XCUITest тесты
@@ -74,6 +75,7 @@ tools: [Agent, Read, Write, Edit, Bash]
 ЭТАП 5: КОД-РЕВЬЮ
   → tech-lead: ревью реализации
   → security-reviewer: ревью безопасности (параллельно с tech-lead, если работа с HealthKit, Keychain, сетью)
+  → design-reviewer: ревью UI (параллельно с tech-lead, если задача затрагивает View компоненты)
 
 ЭТАП 6: ИСПРАВЛЕНИЕ
   → fix-agent: исправить замечания из шага 5
