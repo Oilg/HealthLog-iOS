@@ -22,23 +22,54 @@ final class RiskItemTests: XCTestCase {
     }
 
     func test_id_isType() throws {
-        let item = try decode(condition: "cardiovascular_risk")
-        XCTAssertEqual(item.id, "cardiovascular_risk")
+        let item = try decode(condition: "cardiovascular_obesity_risk")
+        XCTAssertEqual(item.id, "cardiovascular_obesity_risk")
     }
 
     // MARK: - localizedName
 
     func test_localizedName_allKnownTypes() throws {
         let cases: [(String, String)] = [
+            ("sleep_apnea_risk", "Апноэ сна"),
+            ("tachycardia_risk", "Тахикардия"),
+            ("bradycardia_risk", "Брадикардия"),
+            ("irregular_rhythm_risk", "Нерегулярный сердечный ритм"),
+            ("atrial_fibrillation_risk", "Фибрилляция предсердий"),
+            ("hypertension_risk", "Повышенное артериальное давление"),
+            ("hypotension_risk", "Пониженное артериальное давление"),
+            ("low_oxygen_saturation_risk", "Снижение кислорода в крови"),
+            ("temperature_shift_risk", "Температурный сдвиг / лихорадка"),
+            ("illness_onset_risk", "Начало простуды / воспалительного процесса"),
+            ("vo2max_decline_risk", "Снижение кардиофитнеса"),
+            ("hrr_decline_risk", "Ухудшение восстановления после нагрузки"),
             ("overload_recovery_risk", "Перегрузка и недовосстановление"),
+            ("walking_tolerance_decline_risk", "Ухудшение переносимости нагрузки"),
+            ("walking_fitness_decline_risk", "Снижение функциональной ходьбы"),
+            ("respiratory_function_decline_risk", "Ухудшение дыхательной функции"),
+            ("fall_risk", "Риск падений"),
             ("noise_exposure_risk", "Шумовое воздействие"),
+            ("overweight_risk", "Избыточная масса тела"),
             ("obesity_risk", "Риск ожирения"),
+            ("high_body_fat_risk", "Повышенный процент жира"),
+            ("abdominal_obesity_risk", "Абдоминальное ожирение"),
+            ("lean_mass_decline_risk", "Снижение безжировой массы"),
+            ("weight_trend_risk", "Неблагоприятная динамика веса"),
+            ("fat_mass_trend_risk", "Неблагоприятная динамика жировой массы"),
             ("sedentary_lifestyle_risk", "Малоподвижный образ жизни"),
             ("insufficient_activity_risk", "Недостаточная активность"),
-            ("cardiometabolic_risk", "Кардиометаболический профиль"),
+            ("cardiometabolic_profile_risk", "Кардиометаболический профиль"),
             ("metabolic_syndrome_risk", "Метаболический синдром"),
-            ("cardiovascular_risk", "Сердечно-сосудистый риск"),
-            ("recovery_inefficiency_risk", "Неэффективное восстановление"),
+            ("cardiovascular_obesity_risk", "Сердечно-сосудистый риск"),
+            ("fitness_weight_gain_risk", "Ухудшение физической формы"),
+            ("recovery_obesity_risk", "Неэффективное восстановление"),
+            ("body_composition_trend_risk", "Неблагоприятный тренд состава тела"),
+            ("menstrual_cycle_start_forecast", "Прогноз начала менструации"),
+            ("menstrual_cycle_delay_risk", "Возможная задержка менструации"),
+            ("ovulation_window_forecast", "Окно вероятной овуляции"),
+            ("menstrual_irregularity_risk", "Нерегулярность менструального цикла"),
+            ("atypical_menstrual_bleeding_risk", "Атипичные менструальные кровотечения"),
+            ("menstrual_start_forecast_with_temp", "Уточнённый прогноз менструации"),
+            ("ovulation_forecast_with_temp", "Уточнённый прогноз овуляции"),
         ]
         for (type, expected) in cases {
             let item = try decode(condition: type)
@@ -46,9 +77,9 @@ final class RiskItemTests: XCTestCase {
         }
     }
 
-    func test_localizedName_unknownType_fallsBackToCapitalized() throws {
+    func test_localizedName_unknownType_fallsBackToSpaces() throws {
         let item = try decode(condition: "some_new_risk_type")
-        XCTAssertEqual(item.localizedName, "Some New Risk Type")
+        XCTAssertEqual(item.localizedName, "some new risk type")
     }
 
     // MARK: - severityLabel
