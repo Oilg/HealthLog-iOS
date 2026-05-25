@@ -102,19 +102,35 @@ struct RiskDetailView: View {
         VStack(alignment: .leading, spacing: 10) {
             Label("Данные анализа", systemImage: "chart.bar.doc.horizontal.fill")
                 .font(.subheadline.bold())
-            ForEach(info.healthDataTypes, id: \.self) { item in
-                HStack(spacing: 8) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.blue)
-                        .font(.caption)
-                    Text(item)
-                        .font(.subheadline)
+            if risk.dataPoints.isEmpty {
+                ForEach(info.healthDataTypes, id: \.self) { item in
+                    metricRow(label: item, value: nil)
+                }
+            } else {
+                ForEach(Array(risk.dataPoints.enumerated()), id: \.offset) { _, point in
+                    metricRow(label: point.label, value: point.value)
                 }
             }
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    private func metricRow(label: String, value: String?) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: "checkmark.circle.fill")
+                .foregroundStyle(.blue)
+                .font(.caption)
+            Text(label)
+                .font(.subheadline)
+            if let value {
+                Spacer()
+                Text(value)
+                    .font(.subheadline.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+        }
     }
 
     // MARK: - Recommendations
