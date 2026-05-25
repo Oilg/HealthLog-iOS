@@ -21,3 +21,4 @@ fastlane/screenshots/
 fastlane/test_output/
 *.ipa
 *.dSYM.zip
+.claude/worktrees/
