@@ -11,6 +11,7 @@ final class AuthViewModel: ObservableObject {
     @Published var isRegistering = false
     @Published var isLoading = false
     @Published var errorMessage: String?
+    @Published var isPasswordVisible = false
 
     var isSubmitDisabled: Bool {
         if isLoading { return true }
@@ -47,5 +48,10 @@ final class AuthViewModel: ObservableObject {
     func toggleMode() {
         isRegistering.toggle()
         errorMessage = nil
+        isPasswordVisible = false
+    }
+
+    func togglePasswordVisibility() {
+        isPasswordVisible.toggle()
     }
 }

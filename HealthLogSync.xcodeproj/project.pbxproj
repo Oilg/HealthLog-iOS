@@ -11,6 +11,7 @@
 		287D4C70E21BF10F3C4009E1 /* AnalysisReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EAC2244420C407F12BB43A5 /* AnalysisReportTests.swift */; };
 		5B3B5BF8003E78AFF6CA3BA9 /* RiskDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7026337209B84C43608211A6 /* RiskDetailView.swift */; };
 		7E5F0BF52B00FDFBE48BA084 /* SyncManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFFFD044F9112EEB91F839EE /* SyncManagerTests.swift */; };
+		7E5F0BF62B00FDFBE48BA085 /* AuthViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFFFD045F9112EEB91F839EF /* AuthViewModelTests.swift */; };
 		8A5467E33081FEB0687BC493 /* RiskItem+UI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 404970A78F4D95D27D740B8A /* RiskItem+UI.swift */; };
 		A7EAA16AF308F7F08F8D11D4 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04A55CF119C025914797547E /* Foundation.framework */; };
 		AA000001 /* HealthLogSyncApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000001 /* HealthLogSyncApp.swift */; };
@@ -101,6 +102,7 @@
 		AB000031 /* HealthLogSync.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HealthLogSync.entitlements; sourceTree = "<group>"; };
 		AC000001 /* HealthLogSync.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HealthLogSync.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AFFFD044F9112EEB91F839EE /* SyncManagerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SyncManagerTests.swift; sourceTree = "<group>"; };
+		AFFFD045F9112EEB91F839EF /* AuthViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AuthViewModelTests.swift; sourceTree = "<group>"; };
 		C8FF204168773B71D7C9A7C4 /* HealthLogSyncTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HealthLogSyncTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		UI001 /* AppLaunchTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppLaunchTests.swift; sourceTree = "<group>"; };
 		UI004 /* HealthLogSyncUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HealthLogSyncUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -140,6 +142,7 @@
 				9C90C6F6EE1C06FD474EB45D /* RiskItemTests.swift */,
 				8EAC2244420C407F12BB43A5 /* AnalysisReportTests.swift */,
 				AFFFD044F9112EEB91F839EE /* SyncManagerTests.swift */,
+				AFFFD045F9112EEB91F839EF /* AuthViewModelTests.swift */,
 			);
 			name = HealthLogSyncTests;
 			path = HealthLogSyncTests;
@@ -459,6 +462,7 @@
 				0B878BCD126388B8FF9820E4 /* RiskItemTests.swift in Sources */,
 				287D4C70E21BF10F3C4009E1 /* AnalysisReportTests.swift in Sources */,
 				7E5F0BF52B00FDFBE48BA084 /* SyncManagerTests.swift in Sources */,
+				7E5F0BF62B00FDFBE48BA085 /* AuthViewModelTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
