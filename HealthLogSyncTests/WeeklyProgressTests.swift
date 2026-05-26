@@ -131,6 +131,36 @@ final class WeeklyProgressTests: XCTestCase {
         XCTAssertEqual(item.id, "obesity_risk")
     }
 
+    // MARK: - Empty state logic (fix #2)
+
+    func test_emptyItems_hasPreviousFalse_noHistory() throws {
+        let json = Data("""
+        {
+            "current_period_from": null, "current_period_to": null,
+            "previous_period_from": null, "previous_period_to": null,
+            "has_previous": false, "items": []
+        }
+        """.utf8)
+        let response = try JSONDecoder().decode(WeeklyProgressResponse.self, from: json)
+        XCTAssertTrue(response.items.isEmpty)
+        XCTAssertFalse(response.hasPrevious)
+    }
+
+    func test_emptyItems_hasPreviousTrue_allClear() throws {
+        let json = Data("""
+        {
+            "current_period_from": "2026-05-19T12:00:00",
+            "current_period_to": "2026-05-26T12:00:00",
+            "previous_period_from": "2026-05-12T12:00:00",
+            "previous_period_to": "2026-05-19T12:00:00",
+            "has_previous": true, "items": []
+        }
+        """.utf8)
+        let response = try JSONDecoder().decode(WeeklyProgressResponse.self, from: json)
+        XCTAssertTrue(response.items.isEmpty)
+        XCTAssertTrue(response.hasPrevious)
+    }
+
     // MARK: - Helpers
 
     private func makeItem(
