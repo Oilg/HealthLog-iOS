@@ -123,11 +123,14 @@ struct WeeklyProgressCard: View {
 
             if progress.items.isEmpty {
                 HStack(spacing: 8) {
-                    Image(systemName: progress.hasPrevious ? "checkmark.circle.fill" : "clock.fill")
-                        .foregroundStyle(progress.hasPrevious ? Color.green : Color.secondary)
-                    Text(progress.hasPrevious
-                         ? "Нет активных рисков — всё в норме"
-                         : "Недостаточно данных для сравнения")
+                    let icon = progress.hasPrevious ? "checkmark.circle.fill" : "clock.fill"
+                    let iconColor: Color = progress.hasPrevious ? .green : .secondary
+                    let message = progress.hasPrevious
+                        ? "Нет активных рисков — всё в норме"
+                        : "Недостаточно данных для сравнения"
+                    Image(systemName: icon)
+                        .foregroundStyle(iconColor)
+                    Text(message)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
