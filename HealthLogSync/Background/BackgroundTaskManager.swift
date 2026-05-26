@@ -29,8 +29,11 @@ final class BackgroundTaskManager {
         }
         BGTaskScheduler.shared.register(forTaskWithIdentifier: immediateSyncTaskIdentifier, using: nil) { task in
             guard let processingTask = task as? BGProcessingTask else { return }
-            // Immediate sync is one-shot — do not reschedule another immediate task here.
-            self.handleSyncTask(processingTask, rescheduleDaily: false)
+            // Immediate sync is one-shot but we MUST still reschedule the daily sync.
+            // When iOS launches a killed app via BGProcessingTask, no other code path
+            // calls scheduleDailySync() — without this the daily sync would be lost
+            // until the user next foregrounds the app manually.
+            self.handleSyncTask(processingTask, rescheduleDaily: true)
         }
     }
 
@@ -96,17 +99,35 @@ final class BackgroundTaskManager {
             scheduleDailySync()
         }
 
+        // `setTaskCompleted` must be invoked exactly once. The expiration handler
+        // and the natural sync completion both want to call it — without a guard
+        // an expiration that fires just before the sync finishes results in a
+        // double call, which is documented undefined behaviour and trips
+        // assertion failures inside BackgroundTasks.framework. NSLock keeps the
+        // check-and-flip atomic across the BGTaskScheduler thread (expiration
+        // handler) and the MainActor (sync completion).
+        let completionLock = NSLock()
+        var completed = false
+        let completeOnce: (Bool) -> Void = { success in
+            completionLock.lock()
+            let alreadyCompleted = completed
+            completed = true
+            completionLock.unlock()
+            guard !alreadyCompleted else { return }
+            task.setTaskCompleted(success: success)
+        }
+
         let syncTask = Task { @MainActor in
             // Reset state so a previous .success/.failure from a prior run does not
             // make runDeltaSync exit immediately via its `guard case .idle = state`.
             SyncManager.shared.resetState()
             await SyncManager.shared.runDeltaSync()
-            task.setTaskCompleted(success: true)
+            completeOnce(true)
         }
 
         task.expirationHandler = {
             syncTask.cancel()
-            task.setTaskCompleted(success: false)
+            completeOnce(false)
         }
     }
 }

@@ -104,12 +104,45 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
             BackgroundTaskManager.shared.scheduleImmediateSync()
             completionHandler(.noData)
         case .runSync:
-            Task { @MainActor in
-                // Reset state so a previous .success/.failure does not block this run
-                // (runDeltaSync guards on .idle and resetState is only called from UI otherwise).
-                SyncManager.shared.resetState()
-                await SyncManager.shared.runDeltaSync()
-                completionHandler(.newData)
+            runSilentPushSync(completionHandler: completionHandler)
+        }
+    }
+
+    /// Runs the silent-push delta sync without holding iOS to its 30-second
+    /// deadline for `completionHandler`. The 30-second budget is for the
+    /// completion call itself — exceeding it kills the app and locks us out
+    /// of silent pushes for a while, which is why we never await the full
+    /// sync before invoking `completionHandler`.
+    ///
+    /// Flow:
+    ///   1. Begin a `UIBackgroundTaskIdentifier` so iOS keeps us alive past
+    ///      `completionHandler` for the actual upload work.
+    ///   2. Call `completionHandler(.newData)` immediately so iOS marks the
+    ///      push as handled in time.
+    ///   3. Run the sync in the background and end the task when done
+    ///      (also from the expiration handler if iOS revokes the task).
+    private func runSilentPushSync(completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        var bgTaskID = UIBackgroundTaskIdentifier.invalid
+        bgTaskID = UIApplication.shared.beginBackgroundTask(withName: "SilentPushSync") {
+            // Expiration handler: end the task to avoid the watchdog termination.
+            if bgTaskID != .invalid {
+                UIApplication.shared.endBackgroundTask(bgTaskID)
+                bgTaskID = .invalid
+            }
+        }
+
+        // Tell iOS we handled the push within the 30s window. Real work
+        // continues under the background-task assertion above.
+        completionHandler(.newData)
+
+        Task { @MainActor in
+            // Reset state so a previous .success/.failure does not block this run
+            // (runDeltaSync guards on .idle and resetState is only called from UI otherwise).
+            SyncManager.shared.resetState()
+            await SyncManager.shared.runDeltaSync()
+            if bgTaskID != .invalid {
+                UIApplication.shared.endBackgroundTask(bgTaskID)
+                bgTaskID = .invalid
             }
         }
     }

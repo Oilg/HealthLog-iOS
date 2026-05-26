@@ -30,10 +30,25 @@ final class SyncManager: ObservableObject {
     private let deltaSyncWindow: TimeInterval = 7 * 24 * 60 * 60
     private let uploadChunkSize = 9000
 
+    /// Concurrency guard for `runDeltaSync()`.
+    ///
+    /// The previous `guard case .idle = state else { return }` was bypassed
+    /// after we started calling `resetState()` before each background sync
+    /// (HK observer, silent push, BGProcessingTask). Two parallel callers
+    /// could each reset the state to `.idle` and pass the guard simultaneously,
+    /// kicking off two concurrent uploads. The flag below is mutated only on
+    /// the main actor, so reading and flipping it is atomic by construction.
+    private(set) var isSyncing = false
+
     private init() {}
 
     func runDeltaSync() async {
-        guard case .idle = state else { return }
+        // Atomic on @MainActor: both read and write happen on the same
+        // executor, so two concurrent callers cannot both pass this guard.
+        guard !isSyncing else { return }
+        isSyncing = true
+        defer { isSyncing = false }
+
         state = .syncing(progress: "Синхронизация...")
 
         do {

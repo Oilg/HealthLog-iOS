@@ -16,6 +16,18 @@ final class HealthKitManager {
     /// HKObserverQuery must be retained by us or HealthKit silently drops it.
     private var activeObservers: [HKObserverQuery] = []
 
+    /// Serial queue protecting `pendingObserverWorkItem` from being mutated
+    /// concurrently by callbacks from multiple HKObserverQuery instances
+    /// firing on different background queues.
+    private let observerDebounceQueue = DispatchQueue(label: "com.healthlogsync.healthkit.observer")
+    private var pendingObserverWorkItem: DispatchWorkItem?
+
+    /// Debounce window for HKObserverQuery callbacks. iOS may fire observers
+    /// up to ~12 times per minute in the foreground — without debouncing this
+    /// would saturate the backend's 200 req/hour rate limit in ~17 minutes.
+    /// 60 seconds collapses a burst of notifications into a single sync.
+    static let observerDebounceInterval: TimeInterval = 60
+
     private init() {}
 
     var isAvailable: Bool {
@@ -159,61 +171,110 @@ final class HealthKitManager {
         (.sleepAnalysis, .immediate),
     ]
 
-    /// Enables background delivery and installs an HKObserverQuery for heart-rate.
-    /// Safe to call multiple times — observer queries are tracked and not duplicated
-    /// after the first successful install (we re-execute on subsequent calls in case
-    /// the app was relaunched and HealthKit dropped the prior query).
+    /// Enables background delivery and installs an HKObserverQuery for every
+    /// background-delivery type whose authorization has been granted.
     ///
-    /// `onSampleAvailable` is invoked on an arbitrary background queue whenever
-    /// HealthKit signals that new data has arrived. The caller is expected to
-    /// hop to the main actor and trigger a sync.
-    func enableBackgroundDeliveryAndStartObservers(onSampleAvailable: @escaping () -> Void) {
+    /// HealthKit silently drops `enableBackgroundDelivery` calls for types whose
+    /// read authorization is `.notDetermined` or `.sharingDenied`, so we check
+    /// `authorizationStatus(for:)` up-front and skip those — calling this method
+    /// again after authorization is granted will then succeed.
+    ///
+    /// One HKObserverQuery is installed per enabled type because HealthKit
+    /// requires a live observer to actually deliver background updates;
+    /// `enableBackgroundDelivery` on a type without an observer is a no-op.
+    /// Safe to call multiple times — observers are tracked and not duplicated.
+    ///
+    /// `onSampleAvailable` is invoked on `observerDebounceQueue` after the
+    /// debounce window (see `observerDebounceInterval`) so a burst of
+    /// observer fires triggers exactly one downstream sync. Callers must
+    /// hop onto the main actor themselves if they touch main-actor state.
+    func enableBackgroundDeliveryAndStartObservers(onSampleAvailable: @escaping @Sendable () -> Void) {
         guard isAvailable else { return }
 
         for (identifier, frequency) in Self.backgroundDeliveryQuantityTypes {
             guard let type = HKQuantityType.quantityType(forIdentifier: identifier) else { continue }
-            store.enableBackgroundDelivery(for: type, frequency: frequency) { [log] success, error in
-                if let error {
-                    log.error(
-                        "enableBackgroundDelivery \(identifier.rawValue, privacy: .public) failed: \(error.localizedDescription, privacy: .public)"
-                    )
-                } else {
-                    log.info(
-                        "enableBackgroundDelivery \(identifier.rawValue, privacy: .public) success=\(success, privacy: .public)"
-                    )
-                }
+            // Skip types the user hasn't authorized yet. enableBackgroundDelivery
+            // would otherwise silently fail and the type would never deliver
+            // background updates until the next app launch after authorization.
+            guard store.authorizationStatus(for: type) == .sharingAuthorized else {
+                log.info(
+                    "enableBackgroundDelivery \(identifier.rawValue, privacy: .public) skipped — not authorized"
+                )
+                continue
             }
+            enableBackgroundDelivery(for: type, identifier: identifier.rawValue, frequency: frequency)
+            installObserver(for: type, identifier: identifier.rawValue, onSampleAvailable: onSampleAvailable)
         }
 
         for (identifier, frequency) in Self.backgroundDeliveryCategoryTypes {
             guard let type = HKCategoryType.categoryType(forIdentifier: identifier) else { continue }
-            store.enableBackgroundDelivery(for: type, frequency: frequency) { [log] success, error in
-                if let error {
-                    log.error(
-                        "enableBackgroundDelivery \(identifier.rawValue, privacy: .public) failed: \(error.localizedDescription, privacy: .public)"
-                    )
-                } else {
-                    log.info(
-                        "enableBackgroundDelivery \(identifier.rawValue, privacy: .public) success=\(success, privacy: .public)"
-                    )
-                }
+            guard store.authorizationStatus(for: type) == .sharingAuthorized else {
+                log.info(
+                    "enableBackgroundDelivery \(identifier.rawValue, privacy: .public) skipped — not authorized"
+                )
+                continue
+            }
+            enableBackgroundDelivery(for: type, identifier: identifier.rawValue, frequency: frequency)
+            installObserver(for: type, identifier: identifier.rawValue, onSampleAvailable: onSampleAvailable)
+        }
+    }
+
+    private func enableBackgroundDelivery(for type: HKSampleType, identifier: String, frequency: HKUpdateFrequency) {
+        store.enableBackgroundDelivery(for: type, frequency: frequency) { [log] success, error in
+            if let error {
+                log.error(
+                    "enableBackgroundDelivery \(identifier, privacy: .public) failed: \(error.localizedDescription, privacy: .public)"
+                )
+            } else {
+                log.info(
+                    "enableBackgroundDelivery \(identifier, privacy: .public) success=\(success, privacy: .public)"
+                )
             }
         }
+    }
 
-        // Install observer query for heart-rate as the primary "new data" signal.
-        if let heartRate = HKQuantityType.quantityType(forIdentifier: .heartRate), activeObservers.isEmpty {
-            let observer = HKObserverQuery(sampleType: heartRate, predicate: nil) { [log] _, completionHandler, error in
-                if let error {
-                    log.error("heartRate observer fired with error: \(error.localizedDescription, privacy: .public)")
-                } else {
-                    log.info("heartRate observer fired — new samples available")
-                    onSampleAvailable()
-                }
-                // Must always call completion or HealthKit stops delivering updates.
-                completionHandler()
+    private func installObserver(
+        for type: HKSampleType,
+        identifier: String,
+        onSampleAvailable: @escaping @Sendable () -> Void
+    ) {
+        // Avoid stacking duplicate observers on subsequent calls.
+        if activeObservers.contains(where: { $0.objectType?.identifier == type.identifier }) {
+            return
+        }
+        let observer = HKObserverQuery(sampleType: type, predicate: nil) { [weak self, log] _, completionHandler, error in
+            if let error {
+                log.error(
+                    "observer \(identifier, privacy: .public) fired with error: \(error.localizedDescription, privacy: .public)"
+                )
+            } else {
+                log.info("observer \(identifier, privacy: .public) fired — new samples available")
+                self?.scheduleDebouncedNotification(onSampleAvailable)
             }
-            store.execute(observer)
-            activeObservers.append(observer)
+            // Must always call completion or HealthKit stops delivering updates.
+            completionHandler()
+        }
+        store.execute(observer)
+        activeObservers.append(observer)
+    }
+
+    /// Coalesces a burst of HKObserverQuery callbacks into a single delayed
+    /// invocation of `callback`. Any new fire within the debounce window
+    /// resets the timer; the user-visible effect is "after observers stop
+    /// firing for `observerDebounceInterval` seconds, sync once".
+    ///
+    /// Internal so unit tests can exercise the coalescing contract without
+    /// going through HealthKit.
+    func scheduleDebouncedNotification(_ callback: @escaping @Sendable () -> Void) {
+        observerDebounceQueue.async { [weak self] in
+            guard let self else { return }
+            pendingObserverWorkItem?.cancel()
+            let workItem = DispatchWorkItem { callback() }
+            pendingObserverWorkItem = workItem
+            observerDebounceQueue.asyncAfter(
+                deadline: .now() + Self.observerDebounceInterval,
+                execute: workItem
+            )
         }
     }
 }
