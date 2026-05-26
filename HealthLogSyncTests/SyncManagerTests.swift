@@ -52,4 +52,31 @@ final class SyncManagerTests: XCTestCase {
         manager.resetState()
         XCTAssertEqual(manager.state, .idle)
     }
+
+    // MARK: - Silent-push fallback decision (BackgroundTaskManager)
+
+    func test_decideSilentPushAction_runsSyncWhenDeviceUnlocked() {
+        // Unlocked phone: HealthKit reads succeed, run sync inline on the silent push.
+        XCTAssertEqual(
+            BackgroundTaskManager.decideSilentPushAction(isProtectedDataAvailable: true),
+            .runSync
+        )
+    }
+
+    func test_decideSilentPushAction_schedulesImmediateWhenDeviceLocked() {
+        // Locked phone: HealthKit returns errorHealthDataUnavailable, so the silent
+        // push must defer to a BGProcessingTask instead of uploading an empty batch.
+        XCTAssertEqual(
+            BackgroundTaskManager.decideSilentPushAction(isProtectedDataAvailable: false),
+            .scheduleImmediate
+        )
+    }
+
+    func test_scheduleImmediateSync_doesNotCrash() {
+        // Smoke test: submission may fail under test host (no entitlement / simulator)
+        // and that is fine — BGTaskScheduler errors are logged, never thrown.
+        // We only assert the method is safe to invoke from any call site.
+        BackgroundTaskManager.shared.scheduleImmediateSync()
+        BackgroundTaskManager.shared.cancelPendingImmediateSync()
+    }
 }

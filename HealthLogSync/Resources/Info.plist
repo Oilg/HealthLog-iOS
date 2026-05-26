@@ -50,6 +50,7 @@
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>com.healthlogsync.dailysync</string>
+		<string>com.healthlogsync.immediatesync</string>
 	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
