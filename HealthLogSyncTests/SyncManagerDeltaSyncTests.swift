@@ -1,5 +1,5 @@
-@testable import HealthLogSync
 import XCTest
+@testable import HealthLogSync
 
 /// Tests covering the two fixes in `fix/sync-idle-state-and-empty-window`:
 ///
