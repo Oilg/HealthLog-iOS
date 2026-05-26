@@ -42,7 +42,10 @@ final class SyncManager: ObservableObject {
             let records = await HealthKitManager.shared.fetchRecords(from: from, to: to)
 
             if records.isEmpty {
-                UserDefaultsManager.shared.lastSyncAt = to
+                // Do NOT update lastSyncAt here: HealthKit may simply not have synced
+                // from the watch yet. lastSyncAt is updated only after a successful
+                // upload in SyncService.uploadRecords(), preserving the from-window
+                // until real data is delivered.
                 state = .success(recordsCount: 0)
                 return
             }

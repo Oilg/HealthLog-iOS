@@ -39,7 +39,10 @@ final class BackgroundTaskManager {
     private func handleSyncTask(_ task: BGProcessingTask) {
         scheduleDailySync()
 
-        let syncTask = Task {
+        let syncTask = Task { @MainActor in
+            // Reset state so a previous .success/.failure from a prior run does not
+            // make runDeltaSync exit immediately via its `guard case .idle = state`.
+            SyncManager.shared.resetState()
             await SyncManager.shared.runDeltaSync()
             task.setTaskCompleted(success: true)
         }
