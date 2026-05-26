@@ -7,8 +7,10 @@ final class DashboardViewModel: ObservableObject {
     @Published private(set) var reportError: String?
     @Published private(set) var analysisInProgress = false
     @Published private(set) var weeklyProgress: WeeklyProgressResponse?
+    @Published private(set) var isLoadingWeeklyProgress = false
 
     private var analysisReadyObserver: NSObjectProtocol?
+    private var weeklyProgressTask: Task<Void, Never>?
 
     init() {
         analysisReadyObserver = NotificationCenter.default.addObserver(
@@ -20,7 +22,8 @@ final class DashboardViewModel: ObservableObject {
             Task { @MainActor in
                 self.analysisInProgress = false
                 await self.loadLatestReport()
-                await self.loadWeeklyProgress()
+                self.weeklyProgressTask?.cancel()
+                self.weeklyProgressTask = Task { await self.loadWeeklyProgress() }
             }
         }
     }
@@ -34,7 +37,9 @@ final class DashboardViewModel: ObservableObject {
     func refresh() async {
         analysisInProgress = false
         await loadLatestReport()
-        await loadWeeklyProgress()
+        weeklyProgressTask?.cancel()
+        weeklyProgressTask = Task { await loadWeeklyProgress() }
+        await weeklyProgressTask?.value
     }
 
     func loadLatestReport() async {
@@ -51,12 +56,17 @@ final class DashboardViewModel: ObservableObject {
     }
 
     func loadWeeklyProgress() async {
+        isLoadingWeeklyProgress = true
+        defer { isLoadingWeeklyProgress = false }
         do {
             weeklyProgress = try await AnalysisService.shared.fetchWeeklyProgress()
         } catch {
             // Weekly progress is auxiliary — silently swallow errors so the main
-            // analysis card remains usable.
-            weeklyProgress = nil
+            // analysis card remains usable. Preserve last successfully loaded data
+            // on refresh errors; only leave nil if we never had data.
+            if weeklyProgress == nil {
+                weeklyProgress = nil
+            }
         }
     }
 

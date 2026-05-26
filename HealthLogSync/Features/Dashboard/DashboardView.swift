@@ -21,6 +21,10 @@ struct DashboardView: View {
                     }
                     if let progress = viewModel.weeklyProgress {
                         WeeklyProgressCard(progress: progress)
+                    } else if viewModel.isLoadingWeeklyProgress {
+                        ProgressView("Загрузка динамики...")
+                            .frame(maxWidth: .infinity)
+                            .padding()
                     }
                 }
                 .padding()
