@@ -6,6 +6,7 @@ final class DashboardViewModel: ObservableObject {
     @Published private(set) var isLoadingReport = false
     @Published private(set) var reportError: String?
     @Published private(set) var analysisInProgress = false
+    @Published private(set) var weeklyProgress: WeeklyProgressResponse?
 
     private var analysisReadyObserver: NSObjectProtocol?
 
@@ -19,6 +20,7 @@ final class DashboardViewModel: ObservableObject {
             Task { @MainActor in
                 self.analysisInProgress = false
                 await self.loadLatestReport()
+                await self.loadWeeklyProgress()
             }
         }
     }
@@ -32,6 +34,7 @@ final class DashboardViewModel: ObservableObject {
     func refresh() async {
         analysisInProgress = false
         await loadLatestReport()
+        await loadWeeklyProgress()
     }
 
     func loadLatestReport() async {
@@ -45,6 +48,16 @@ final class DashboardViewModel: ObservableObject {
             reportError = error.localizedDescription
         }
         isLoadingReport = false
+    }
+
+    func loadWeeklyProgress() async {
+        do {
+            weeklyProgress = try await AnalysisService.shared.fetchWeeklyProgress()
+        } catch {
+            // Weekly progress is auxiliary — silently swallow errors so the main
+            // analysis card remains usable.
+            weeklyProgress = nil
+        }
     }
 
     func markAnalysisInProgress() {
