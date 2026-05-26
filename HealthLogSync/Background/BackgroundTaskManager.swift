@@ -25,22 +25,37 @@ final class BackgroundTaskManager {
     func registerTasks() {
         BGTaskScheduler.shared.register(forTaskWithIdentifier: dailySyncTaskIdentifier, using: nil) { task in
             guard let processingTask = task as? BGProcessingTask else { return }
-            self.handleSyncTask(processingTask, rescheduleDaily: true)
+            self.handleSyncTask(processingTask, rescheduleDailyReplacingExisting: true)
         }
         BGTaskScheduler.shared.register(forTaskWithIdentifier: immediateSyncTaskIdentifier, using: nil) { task in
             guard let processingTask = task as? BGProcessingTask else { return }
-            // Immediate sync is one-shot but we MUST still reschedule the daily sync.
-            // When iOS launches a killed app via BGProcessingTask, no other code path
-            // calls scheduleDailySync() — without this the daily sync would be lost
-            // until the user next foregrounds the app manually.
-            self.handleSyncTask(processingTask, rescheduleDaily: true)
+            // Immediate sync is one-shot but we MUST still ensure the daily sync
+            // is scheduled. When iOS launches a killed app via BGProcessingTask,
+            // no other code path calls scheduleDailySync(). We use
+            // scheduleDailySyncIfNeeded() (no cancel-first) so that an existing
+            // daily sync pending for today is NOT discarded — cancelling it here
+            // would push the next run to tomorrow and skip one day.
+            self.handleSyncTask(processingTask, rescheduleDailyReplacingExisting: false)
         }
     }
 
     /// Schedules the regular daily sync at the next 10:00 local time.
+    /// Cancels any pending daily sync first so duplicate requests are avoided.
     func scheduleDailySync() {
         cancelPendingDailySync()
+        submitDailySyncRequest()
+    }
 
+    /// Schedules the regular daily sync without cancelling a potentially pending
+    /// request first. Used from the immediate-sync handler where an existing daily
+    /// sync may already be pending for today: cancelling + rescheduling it would
+    /// push the next run to tomorrow, skipping one day. BGTaskScheduler silently
+    /// ignores duplicate submissions for the same identifier, so this is safe.
+    func scheduleDailySyncIfNeeded() {
+        submitDailySyncRequest()
+    }
+
+    private func submitDailySyncRequest() {
         let request = BGProcessingTaskRequest(identifier: dailySyncTaskIdentifier)
         request.requiresNetworkConnectivity = true
         request.requiresExternalPower = false
@@ -94,9 +109,17 @@ final class BackgroundTaskManager {
         isProtectedDataAvailable ? .runSync : .scheduleImmediate
     }
 
-    private func handleSyncTask(_ task: BGProcessingTask, rescheduleDaily: Bool) {
-        if rescheduleDaily {
+    /// - Parameters:
+    ///   - task: The BGProcessingTask to handle.
+    ///   - rescheduleDailyReplacingExisting: When `true` (daily handler), cancel any
+    ///     pending daily sync and submit a fresh one. When `false` (immediate handler),
+    ///     only submit if not already pending — avoids skipping a day by cancelling a
+    ///     valid pending daily sync.
+    private func handleSyncTask(_ task: BGProcessingTask, rescheduleDailyReplacingExisting: Bool) {
+        if rescheduleDailyReplacingExisting {
             scheduleDailySync()
+        } else {
+            scheduleDailySyncIfNeeded()
         }
 
         // `setTaskCompleted` must be invoked exactly once. The expiration handler

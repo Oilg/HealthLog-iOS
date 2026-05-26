@@ -174,10 +174,13 @@ final class HealthKitManager {
     /// Enables background delivery and installs an HKObserverQuery for every
     /// background-delivery type whose authorization has been granted.
     ///
-    /// HealthKit silently drops `enableBackgroundDelivery` calls for types whose
-    /// read authorization is `.notDetermined` or `.sharingDenied`, so we check
-    /// `authorizationStatus(for:)` up-front and skip those — calling this method
-    /// again after authorization is granted will then succeed.
+    /// `authorizationStatus(for:)` reflects *write* (sharing) authorization and
+    /// always returns `.notDetermined` for read-only types (heartRate, stepCount,
+    /// sleepAnalysis) because we request `toShare: []`. Using it as a read-auth
+    /// guard caused `enableBackgroundDelivery` and `installObserver` to be
+    /// skipped unconditionally. We now use `UserDefaultsManager.healthKitAuthorized`
+    /// as the proxy — it is set to `true` by `HealthKitPermissionView` immediately
+    /// after a successful `requestAuthorization` call.
     ///
     /// One HKObserverQuery is installed per enabled type because HealthKit
     /// requires a live observer to actually deliver background updates;
@@ -190,30 +193,19 @@ final class HealthKitManager {
     /// hop onto the main actor themselves if they touch main-actor state.
     func enableBackgroundDeliveryAndStartObservers(onSampleAvailable: @escaping @Sendable () -> Void) {
         guard isAvailable else { return }
+        guard UserDefaultsManager.shared.healthKitAuthorized else {
+            log.info("enableBackgroundDelivery skipped — HealthKit not yet authorized")
+            return
+        }
 
         for (identifier, frequency) in Self.backgroundDeliveryQuantityTypes {
             guard let type = HKQuantityType.quantityType(forIdentifier: identifier) else { continue }
-            // Skip types the user hasn't authorized yet. enableBackgroundDelivery
-            // would otherwise silently fail and the type would never deliver
-            // background updates until the next app launch after authorization.
-            guard store.authorizationStatus(for: type) == .sharingAuthorized else {
-                log.info(
-                    "enableBackgroundDelivery \(identifier.rawValue, privacy: .public) skipped — not authorized"
-                )
-                continue
-            }
             enableBackgroundDelivery(for: type, identifier: identifier.rawValue, frequency: frequency)
             installObserver(for: type, identifier: identifier.rawValue, onSampleAvailable: onSampleAvailable)
         }
 
         for (identifier, frequency) in Self.backgroundDeliveryCategoryTypes {
             guard let type = HKCategoryType.categoryType(forIdentifier: identifier) else { continue }
-            guard store.authorizationStatus(for: type) == .sharingAuthorized else {
-                log.info(
-                    "enableBackgroundDelivery \(identifier.rawValue, privacy: .public) skipped — not authorized"
-                )
-                continue
-            }
             enableBackgroundDelivery(for: type, identifier: identifier.rawValue, frequency: frequency)
             installObserver(for: type, identifier: identifier.rawValue, onSampleAvailable: onSampleAvailable)
         }

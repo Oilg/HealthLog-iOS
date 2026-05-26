@@ -45,7 +45,10 @@ final class SyncManager: ObservableObject {
     func runDeltaSync() async {
         // Atomic on @MainActor: both read and write happen on the same
         // executor, so two concurrent callers cannot both pass this guard.
-        guard !isSyncing else { return }
+        // Also block when an initial sync is in progress — both operations
+        // fetch from overlapping HealthKit windows and would produce
+        // duplicate uploads.
+        guard !isSyncing, !isInitialSyncRunning else { return }
         isSyncing = true
         defer { isSyncing = false }
 
@@ -78,7 +81,8 @@ final class SyncManager: ObservableObject {
     }
 
     func runInitialSync() async {
-        guard !isInitialSyncRunning else { return }
+        // Also block when a delta sync is running — same overlapping-window risk.
+        guard !isInitialSyncRunning, !isSyncing else { return }
         isInitialSyncRunning = true
 
         var bgTaskID = UIBackgroundTaskIdentifier.invalid
@@ -134,6 +138,13 @@ final class SyncManager: ObservableObject {
     }
 
     func resetState() {
+        // Do not overwrite an active `.syncing` state — a concurrent caller
+        // resetting state while a sync is in flight would clear the progress
+        // indicator and unblock the `isSyncing` guard prematurely (it doesn't,
+        // because `isSyncing` is independent, but the published `state` would
+        // become stale/misleading). If a sync is already running, this call
+        // is a no-op.
+        guard !isSyncing else { return }
         state = .idle
     }
 }
