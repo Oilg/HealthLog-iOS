@@ -66,6 +66,9 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         }
 
         Task { @MainActor in
+            // Reset state so a previous .success/.failure does not block this run
+            // (runDeltaSync guards on .idle and resetState is only called from UI otherwise).
+            SyncManager.shared.resetState()
             await SyncManager.shared.runDeltaSync()
             completionHandler(.newData)
         }
