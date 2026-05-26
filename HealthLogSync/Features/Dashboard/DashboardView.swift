@@ -19,6 +19,9 @@ struct DashboardView: View {
                     } else if let error = viewModel.reportError {
                         ErrorCard(message: error)
                     }
+                    if let progress = viewModel.weeklyProgress {
+                        WeeklyProgressCard(progress: progress)
+                    }
                 }
                 .padding()
             }

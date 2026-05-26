@@ -13,4 +13,8 @@ final class AnalysisService {
             path: "/api/v1/analysis/history?limit=\(limit)&offset=\(offset)"
         )
     }
+
+    func fetchWeeklyProgress() async throws -> WeeklyProgressResponse {
+        try await APIClient.shared.request(path: "/api/v1/analysis/weekly-progress")
+    }
 }

@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0B878BCD126388B8FF9820E4 /* RiskItemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C90C6F6EE1C06FD474EB45D /* RiskItemTests.swift */; };
 		287D4C70E21BF10F3C4009E1 /* AnalysisReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EAC2244420C407F12BB43A5 /* AnalysisReportTests.swift */; };
+		287D4C71E21BF10F3C4009E2 /* WeeklyProgressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EAC2245420C407F12BB43A6 /* WeeklyProgressTests.swift */; };
 		5B3B5BF8003E78AFF6CA3BA9 /* RiskDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7026337209B84C43608211A6 /* RiskDetailView.swift */; };
 		7E5F0BF52B00FDFBE48BA084 /* SyncManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFFFD044F9112EEB91F839EE /* SyncManagerTests.swift */; };
 		7E5F0BF62B00FDFBE48BA085 /* AuthViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFFFD045F9112EEB91F839EF /* AuthViewModelTests.swift */; };
@@ -36,6 +37,7 @@
 		AA000020 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000020 /* MainTabView.swift */; };
 		AA000021 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000021 /* DashboardView.swift */; };
 		AA000022 /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000022 /* DashboardViewModel.swift */; };
+		AA000050 /* WeeklyProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000050 /* WeeklyProgress.swift */; };
 		AA000023 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000023 /* HistoryView.swift */; };
 		AA000024 /* HistoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000024 /* HistoryViewModel.swift */; };
 		AA000025 /* ReportDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000025 /* ReportDetailView.swift */; };
@@ -68,6 +70,7 @@
 		404970A78F4D95D27D740B8A /* RiskItem+UI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "RiskItem+UI.swift"; sourceTree = "<group>"; };
 		7026337209B84C43608211A6 /* RiskDetailView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RiskDetailView.swift; sourceTree = "<group>"; };
 		8EAC2244420C407F12BB43A5 /* AnalysisReportTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AnalysisReportTests.swift; sourceTree = "<group>"; };
+		8EAC2245420C407F12BB43A6 /* WeeklyProgressTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WeeklyProgressTests.swift; sourceTree = "<group>"; };
 		9C90C6F6EE1C06FD474EB45D /* RiskItemTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RiskItemTests.swift; sourceTree = "<group>"; };
 		AB000001 /* HealthLogSyncApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthLogSyncApp.swift; sourceTree = "<group>"; };
 		AB000002 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -91,6 +94,7 @@
 		AB000020 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		AB000021 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		AB000022 /* DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardViewModel.swift; sourceTree = "<group>"; };
+		AB000050 /* WeeklyProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyProgress.swift; sourceTree = "<group>"; };
 		AB000023 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
 		AB000024 /* HistoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryViewModel.swift; sourceTree = "<group>"; };
 		AB000025 /* ReportDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportDetailView.swift; sourceTree = "<group>"; };
@@ -141,6 +145,7 @@
 			children = (
 				9C90C6F6EE1C06FD474EB45D /* RiskItemTests.swift */,
 				8EAC2244420C407F12BB43A5 /* AnalysisReportTests.swift */,
+				8EAC2245420C407F12BB43A6 /* WeeklyProgressTests.swift */,
 				AFFFD044F9112EEB91F839EE /* SyncManagerTests.swift */,
 				AFFFD045F9112EEB91F839EF /* AuthViewModelTests.swift */,
 			);
@@ -285,6 +290,7 @@
 				AB000020 /* MainTabView.swift */,
 				AB000021 /* DashboardView.swift */,
 				AB000022 /* DashboardViewModel.swift */,
+				AB000050 /* WeeklyProgress.swift */,
 			);
 			path = Dashboard;
 			sourceTree = "<group>";
@@ -461,6 +467,7 @@
 			files = (
 				0B878BCD126388B8FF9820E4 /* RiskItemTests.swift in Sources */,
 				287D4C70E21BF10F3C4009E1 /* AnalysisReportTests.swift in Sources */,
+				287D4C71E21BF10F3C4009E2 /* WeeklyProgressTests.swift in Sources */,
 				7E5F0BF52B00FDFBE48BA084 /* SyncManagerTests.swift in Sources */,
 				7E5F0BF62B00FDFBE48BA085 /* AuthViewModelTests.swift in Sources */,
 			);
@@ -492,6 +499,7 @@
 				AA000020 /* MainTabView.swift in Sources */,
 				AA000021 /* DashboardView.swift in Sources */,
 				AA000022 /* DashboardViewModel.swift in Sources */,
+				AA000050 /* WeeklyProgress.swift in Sources */,
 				AA000023 /* HistoryView.swift in Sources */,
 				AA000024 /* HistoryViewModel.swift in Sources */,
 				AA000025 /* ReportDetailView.swift in Sources */,
