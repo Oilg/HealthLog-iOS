@@ -10,11 +10,38 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         BackgroundTaskManager.shared.scheduleDailySync()
         UNUserNotificationCenter.current().delegate = self
         requestNotificationPermission()
+        startHealthKitBackgroundObservation()
         return true
+    }
+
+    /// Wires HealthKit background delivery + observer so the watch pushing new
+    /// samples to the iPhone wakes us up and triggers a sync. Independent of
+    /// silent pushes — this is the primary, OS-managed path.
+    private func startHealthKitBackgroundObservation() {
+        HealthKitManager.shared.enableBackgroundDeliveryAndStartObservers {
+            // HKObserverQuery callback runs on a background queue.
+            // SyncManager is @MainActor — hop over before touching it.
+            Task { @MainActor in
+                SyncManager.shared.resetState()
+                await SyncManager.shared.runDeltaSync()
+            }
+        }
     }
 
     func applicationWillEnterForeground(_: UIApplication) {
         BackgroundTaskManager.shared.scheduleDailySync()
+
+        // Foreground is the most reliable trigger we have. iOS background policy
+        // (battery, killed state, BGProcessingTask budget) frequently suppresses
+        // silent pushes and BGAppRefresh, so a user-initiated foreground brings
+        // us the only deterministic opportunity to push fresh HealthKit data to
+        // the server. resetState() unblocks the .idle guard in runDeltaSync()
+        // when the previous run left us in .success/.failure — exactly the same
+        // pattern the analysis-ready push path already uses below.
+        Task { @MainActor in
+            SyncManager.shared.resetState()
+            await SyncManager.shared.runDeltaSync()
+        }
     }
 
     private func requestNotificationPermission() {
@@ -65,12 +92,25 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
             return
         }
 
-        Task { @MainActor in
-            // Reset state so a previous .success/.failure does not block this run
-            // (runDeltaSync guards on .idle and resetState is only called from UI otherwise).
-            SyncManager.shared.resetState()
-            await SyncManager.shared.runDeltaSync()
-            completionHandler(.newData)
+        // When the device is locked, HealthKit reads return errorHealthDataUnavailable
+        // and fetchRecords yields an empty array — the sync would then upload nothing
+        // and miss this opportunity. Defer to a BGProcessingTask that fires once the
+        // user unlocks the device, when HealthKit data becomes readable again.
+        let action = BackgroundTaskManager.decideSilentPushAction(
+            isProtectedDataAvailable: UIApplication.shared.isProtectedDataAvailable
+        )
+        switch action {
+        case .scheduleImmediate:
+            BackgroundTaskManager.shared.scheduleImmediateSync()
+            completionHandler(.noData)
+        case .runSync:
+            Task { @MainActor in
+                // Reset state so a previous .success/.failure does not block this run
+                // (runDeltaSync guards on .idle and resetState is only called from UI otherwise).
+                SyncManager.shared.resetState()
+                await SyncManager.shared.runDeltaSync()
+                completionHandler(.newData)
+            }
         }
     }
 }
