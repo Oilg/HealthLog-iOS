@@ -128,15 +128,15 @@ final class SyncManagerPendingDeltaAfterInitialTests: XCTestCase {
 
     /// `runDeltaSync()` returns `false` on a second concurrent call.
     func test_runDeltaSync_returnsFalse_onConcurrentSecondCall() async {
-        async let first = SyncManager.shared.runDeltaSync()
-        async let second = SyncManager.shared.runDeltaSync()
-        let results = await (first, second)
-        // At least one of them must have returned false (the one that was blocked).
-        // Both could be false if the second fires before the first acquires the flag.
-        let atLeastOneFalse = !results.0 || !results.1
-        let atLeastOneTrue = results.0 || results.1
-        XCTAssertTrue(atLeastOneFalse, "At least one concurrent call must return false")
-        XCTAssertTrue(atLeastOneTrue, "At least one concurrent call must return true")
+        async let first: Bool = SyncManager.shared.runDeltaSync()
+        async let second: Bool = SyncManager.shared.runDeltaSync()
+        // Task.yield() ensures the first child task acquires @MainActor and sets
+        // isSyncing=true before the second task checks the guard — deterministic
+        // regardless of how fast HealthKit delivers callbacks in CI.
+        await Task.yield()
+        let (r1, r2) = await (first, second)
+        // Exactly one call must have been dropped (returned false).
+        XCTAssertNotEqual(r1, r2, "exactly one concurrent runDeltaSync() must be dropped (return false)")
     }
 
     /// `isSyncing` is cleared after `runDeltaSync()` — the return-value change
