@@ -62,10 +62,10 @@ final class BackgroundTaskManager {
     func scheduleDailySync() {
         dailySyncLock.lock()
         defer { dailySyncLock.unlock() }
-        // cancelPendingDailySync() is called without the lock held — it is
-        // a separate, non-recursive function that resets the flag itself.
-        // We replicate its effect here inside the lock boundary so the flag
-        // is always in a consistent state before submit.
+        // cancelPendingDailySync() now acquires dailySyncLock itself, so it
+        // cannot be called from here without causing a non-reentrant NSLock
+        // deadlock. The cancel + flag-reset are inlined directly inside this
+        // lock boundary to avoid that recursive acquisition.
         BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: dailySyncTaskIdentifier)
         UserDefaults.standard.set(false, forKey: dailySyncScheduledKey)
         // submitDailySyncRequest() is called while holding dailySyncLock. This is safe
