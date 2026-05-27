@@ -68,6 +68,11 @@ final class BackgroundTaskManager {
         // is always in a consistent state before submit.
         BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: dailySyncTaskIdentifier)
         UserDefaults.standard.set(false, forKey: dailySyncScheduledKey)
+        // submitDailySyncRequest() is called while holding dailySyncLock. This is safe
+        // because BGTaskScheduler.submit() is a synchronous registration call that does
+        // not invoke any BackgroundTaskManager callbacks synchronously — registered
+        // handlers are dispatched by iOS on separate threads at a later time, so no
+        // reentrance into this lock occurs.
         let submitted = submitDailySyncRequest()
         UserDefaults.standard.set(submitted, forKey: dailySyncScheduledKey)
     }
@@ -85,6 +90,11 @@ final class BackgroundTaskManager {
             log.info("Daily sync already scheduled — skipping submit")
             return
         }
+        // submitDailySyncRequest() is called while holding dailySyncLock. This is safe
+        // because BGTaskScheduler.submit() is a synchronous registration call that does
+        // not invoke any BackgroundTaskManager callbacks synchronously — registered
+        // handlers are dispatched by iOS on separate threads at a later time, so no
+        // reentrance into this lock occurs.
         let submitted = submitDailySyncRequest()
         UserDefaults.standard.set(submitted, forKey: dailySyncScheduledKey)
     }
@@ -135,6 +145,8 @@ final class BackgroundTaskManager {
 
     func cancelPendingDailySync() {
         BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: dailySyncTaskIdentifier)
+        dailySyncLock.lock()
+        defer { dailySyncLock.unlock() }
         UserDefaults.standard.set(false, forKey: dailySyncScheduledKey)
         log.info("Pending daily sync cancelled and flag cleared")
     }

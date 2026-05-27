@@ -162,7 +162,6 @@ final class SyncManager: ObservableObject {
         // Only trigger pending delta sync if initial sync completed successfully.
         // If initial sync failed, leave state = .failure so the user sees the error.
         if initialSyncSucceeded, pendingDeltaSyncAfterInitial {
-            pendingDeltaSyncAfterInitial = false
             // Acquire a new background task for the deferred delta sync so iOS
             // does not suspend the process mid-upload.
             let deltaTaskBox = BackgroundTaskBox()
@@ -170,10 +169,11 @@ final class SyncManager: ObservableObject {
                 deltaTaskBox.endIfNeeded()
             }
             guard deltaTaskBox.value != .invalid else {
-                // iOS did not grant background execution time — skip deferred delta sync
-                // to avoid being killed mid-upload without a valid background task token.
+                // iOS did not grant background execution time — do NOT clear the flag
+                // so the next runInitialSync() call can retry the deferred delta sync.
                 return
             }
+            pendingDeltaSyncAfterInitial = false
             await runDeltaSync()
             deltaTaskBox.endIfNeeded()
         }

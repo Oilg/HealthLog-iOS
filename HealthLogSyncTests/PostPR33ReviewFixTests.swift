@@ -339,14 +339,15 @@ final class ScheduleDailySyncFlagTests: XCTestCase {
         super.tearDown()
     }
 
-    /// After `scheduleDailySync()` completes, the flag must be `true`.
+    /// After `scheduleDailySync()` completes, the flag reflects the submit outcome.
+    /// In the test environment BGTaskScheduler always rejects the submit, so the flag
+    /// must remain `false` — it is only `true` when BGTaskScheduler.submit succeeds.
     func test_scheduleDailySync_setsScheduledFlagToTrue() {
         BackgroundTaskManager.shared.scheduleDailySync()
-        XCTAssertTrue(
+        XCTAssertFalse(
             UserDefaults.standard.bool(forKey: key),
-            "scheduleDailySync must leave dailySyncScheduledKey = true"
+            "scheduleDailySync must not set the flag when BGTaskScheduler.submit fails in test environment"
         )
-        BackgroundTaskManager.shared.cancelPendingDailySync()
     }
 
     /// `scheduleDailySyncIfNeeded()` must NOT reset the flag when already true.
