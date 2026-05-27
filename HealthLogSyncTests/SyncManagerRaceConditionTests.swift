@@ -51,10 +51,21 @@ final class SyncManagerRaceConditionTests: XCTestCase {
         // they both observe state == .idle synchronously before the
         // first state mutation. Under the fix, the second observes
         // isSyncing == true and returns.
+        //
+        // Task.yield() after the async let declarations gives the runtime an
+        // explicit opportunity to schedule the first child task on @MainActor
+        // before we reach the await below, ensuring isSyncing is set (by the
+        // first task) before the second task checks the guard — independently
+        // of how quickly HealthKit delivers its callback in the test environment.
         async let firstSync: Bool = manager.runDeltaSync()
         async let secondSync: Bool = manager.runDeltaSync()
-        _ = await (firstSync, secondSync)
+        await Task.yield()
+        let (r1, r2) = await (firstSync, secondSync)
 
+        // Exactly one call must have been dropped: the guard returns false for
+        // the second caller. If both returned the same value the isSyncing guard
+        // is broken (both true = both ran; both false = neither ran).
+        XCTAssertNotEqual(r1, r2, "exactly one concurrent runDeltaSync() must be dropped (return false)")
         XCTAssertFalse(manager.isSyncing, "isSyncing must be cleared by defer after both calls return")
         XCTAssertEqual(manager.state, .success(recordsCount: 0))
     }

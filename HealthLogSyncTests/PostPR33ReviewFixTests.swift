@@ -92,7 +92,13 @@ final class SyncManagerCrossCheckTests: XCTestCase {
         let manager = SyncManager.shared
         async let first: Bool = manager.runDeltaSync()
         async let second: Bool = manager.runDeltaSync()
-        _ = await (first, second)
+        // Task.yield() ensures the first child task gets @MainActor and sets
+        // isSyncing=true before the second task checks the guard — deterministic
+        // regardless of how fast HealthKit delivers callbacks in CI.
+        await Task.yield()
+        let (r1, r2) = await (first, second)
+        // Exactly one call must have been dropped (returned false).
+        XCTAssertNotEqual(r1, r2, "exactly one concurrent runDeltaSync() must be dropped (return false)")
         XCTAssertFalse(manager.isSyncing)
     }
 }
