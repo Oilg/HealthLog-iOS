@@ -258,9 +258,10 @@ private final class CompletionValueRecorder {
 
 // MARK: - Fix 7 (LOW): clearFailureState
 
-/// `applicationWillEnterForeground` now calls `clearFailureState()` before
-/// `resetState()` so a stale `.failure` banner is always dismissed on foreground,
-/// even when a sync is running (in which case `resetState()` would be a no-op).
+/// `clearFailureState()` is the public API used to dismiss a stale `.failure`
+/// banner without interfering with an in-progress sync (where `resetState()`
+/// would be a no-op). The tests verify the contract of the method itself —
+/// callers (UI, background entry points) rely on these invariants.
 @MainActor
 final class SyncManagerClearFailureStateTests: XCTestCase {
     override func setUp() {

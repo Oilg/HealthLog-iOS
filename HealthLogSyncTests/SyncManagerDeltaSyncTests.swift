@@ -8,8 +8,8 @@ import XCTest
 ///    and `resetState()` was only invoked from the UI button on DashboardView.
 ///    After a first sync left `state == .success`, every subsequent silent
 ///    push / BGProcessingTask exited the function immediately. The fix calls
-///    `SyncManager.shared.resetState()` from AppDelegate and
-///    BackgroundTaskManager before kicking off `runDeltaSync()`.
+///    `SyncManager.shared.resetState()` from BackgroundTaskManager and the
+///    silent-push handler before kicking off `runDeltaSync()`.
 ///
 /// 2. `lastSyncAt` must NOT be advanced when HealthKit returns zero records.
 ///    Otherwise the next sync window starts at "now" and any records the watch
@@ -45,8 +45,8 @@ final class SyncManagerDeltaSyncTests: XCTestCase {
     /// Reproduces the original bug and proves the fix's contract:
     /// after a first `runDeltaSync()` leaves the manager in `.success`, a
     /// second call to `runDeltaSync()` would be skipped by
-    /// `guard case .idle = state`. The fix in AppDelegate and
-    /// BackgroundTaskManager is to call `resetState()` before each sync; after
+    /// `guard case .idle = state`. The fix in BackgroundTaskManager and the
+    /// silent-push handler is to call `resetState()` before each sync; after
     /// that the second sync must execute again and again leave state at
     /// `.success(recordsCount: 0)` (HealthKit is unauthorized in the test
     /// target, so the empty-records branch runs).
@@ -59,8 +59,8 @@ final class SyncManagerDeltaSyncTests: XCTestCase {
 
         // Without resetState(), runDeltaSync would now early-return and state
         // would remain identical to whatever the first run produced. We invoke
-        // the exact call pattern the fix introduces in AppDelegate /
-        // BackgroundTaskManager: resetState() right before runDeltaSync().
+        // the exact call pattern the fix introduces in BackgroundTaskManager
+        // and the silent-push handler: resetState() right before runDeltaSync().
         manager.resetState()
         XCTAssertEqual(manager.state, .idle, "Precondition for second runDeltaSync")
 
@@ -75,7 +75,7 @@ final class SyncManagerDeltaSyncTests: XCTestCase {
 
     /// Direct, isolated proof that the guard expression in runDeltaSync flips
     /// back to passing only after resetState() runs. This is the contract
-    /// AppDelegate and BackgroundTaskManager now depend on.
+    /// BackgroundTaskManager and the silent-push handler now depend on.
     func test_resetState_returnsToIdle_fromAnyPostSyncState() async {
         let manager = SyncManager.shared
 
