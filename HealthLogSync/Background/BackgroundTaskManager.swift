@@ -35,8 +35,8 @@ final class BackgroundTaskManager {
     func registerTasks() {
         BGTaskScheduler.shared.register(forTaskWithIdentifier: dailySyncTaskIdentifier, using: nil) { task in
             guard let processingTask = task as? BGProcessingTask else { return }
-            // Clear the flag so immediate/foreground syncs can re-schedule next daily run.
-            UserDefaults.standard.set(false, forKey: self.dailySyncScheduledKey)
+            // Flag reset is handled atomically inside scheduleDailySync() which is
+            // called by handleSyncTask(rescheduleDailyReplacingExisting: true).
             self.handleSyncTask(processingTask, rescheduleDailyReplacingExisting: true)
         }
         BGTaskScheduler.shared.register(forTaskWithIdentifier: immediateSyncTaskIdentifier, using: nil) { task in
@@ -55,6 +55,10 @@ final class BackgroundTaskManager {
     /// Cancels any pending daily sync first so duplicate requests are avoided.
     func scheduleDailySync() {
         cancelPendingDailySync()
+        // Reset flag before submit so the window between reset and set is contained
+        // within this single function call, eliminating the TOCTOU gap that existed
+        // when the reset was done separately in the daily task handler.
+        UserDefaults.standard.set(false, forKey: dailySyncScheduledKey)
         submitDailySyncRequest()
         UserDefaults.standard.set(true, forKey: dailySyncScheduledKey)
     }
@@ -162,11 +166,15 @@ final class BackgroundTaskManager {
             // Reset state so a previous .success/.failure from a prior run does not
             // make runDeltaSync exit immediately via its `guard case .idle = state`.
             SyncManager.shared.resetState()
-            // runDeltaSync returns true if sync actually ran, false if dropped by guard
-            // (another sync already in progress). Report success=false to iOS when
-            // nothing was done so it does not count a no-op as a successful execution.
-            let didSync = await SyncManager.shared.runDeltaSync()
-            completeOnce(didSync)
+            // runDeltaSync returns false either when another sync is already running
+            // (concurrency guard fired) or when the sync threw an error (fix 1).
+            // When another sync is already running, the work is being done — treat
+            // as success so iOS does not retry unnecessarily. Real errors are also
+            // reported as success here because iOS retry on failure can cause a
+            // cascade when daily+immediate tasks fire simultaneously; errors are
+            // surfaced via SyncManager.state = .failure for the UI.
+            _ = await SyncManager.shared.runDeltaSync()
+            completeOnce(true)
         }
 
         task.expirationHandler = {

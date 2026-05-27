@@ -71,6 +71,7 @@ final class SyncManager: ObservableObject {
 
         state = .syncing(progress: "Синхронизация...")
 
+        var succeeded = false
         do {
             let to = Date()
             let from = UserDefaultsManager.shared.lastSyncAt ?? Date().addingTimeInterval(-deltaSyncWindow)
@@ -92,10 +93,11 @@ final class SyncManager: ObservableObject {
                 totalSynced += response.syncedRecords
             }
             state = .success(recordsCount: totalSynced)
+            succeeded = true
         } catch {
             state = .failure(error)
         }
-        return true
+        return succeeded
     }
 
     func runInitialSync() async {
@@ -111,6 +113,7 @@ final class SyncManager: ObservableObject {
             taskBox.endIfNeeded()
         }
 
+        var initialSyncSucceeded = false
         do {
             let calendar = Calendar.current
             let to = Date()
@@ -147,6 +150,7 @@ final class SyncManager: ObservableObject {
 
             UserDefaultsManager.shared.initialSyncCompleted = true
             UserDefaultsManager.shared.initialSyncProgress = nil
+            initialSyncSucceeded = true
         } catch {
             state = .failure(error)
         }
@@ -154,11 +158,18 @@ final class SyncManager: ObservableObject {
         taskBox.endIfNeeded()
         isInitialSyncRunning = false
 
-        // If a HKObserver event arrived during initial sync, run one delta sync
-        // now so those samples are not permanently lost.
-        if pendingDeltaSyncAfterInitial {
+        // Only trigger pending delta sync if initial sync completed successfully.
+        // If initial sync failed, leave state = .failure so the user sees the error.
+        if initialSyncSucceeded, pendingDeltaSyncAfterInitial {
             pendingDeltaSyncAfterInitial = false
+            // Acquire a new background task for the deferred delta sync so iOS
+            // does not suspend the process mid-upload.
+            let deltaTaskBox = BackgroundTaskBox()
+            deltaTaskBox.value = UIApplication.shared.beginBackgroundTask(withName: "DeferredDeltaSync") {
+                deltaTaskBox.endIfNeeded()
+            }
             await runDeltaSync()
+            deltaTaskBox.endIfNeeded()
         }
     }
 

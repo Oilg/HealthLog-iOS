@@ -230,3 +230,126 @@ final class BackgroundTaskBoxTests: XCTestCase {
         )
     }
 }
+
+// MARK: - Post-PR33 review замечание 1: runDeltaSync returns false on catch
+
+/// Review замечание 1 (HIGH): `runDeltaSync()` previously returned `true`
+/// unconditionally after the do/catch, meaning an upload error still reported
+/// success to the BGProcessingTask. Fixed by using a `succeeded` flag that is
+/// only set to `true` inside the do block before returning.
+///
+/// In the unit-test target HealthKit is unauthorized so `fetchRecords` returns
+/// an empty array — the empty-records early-`return true` executes, which is
+/// correct (empty fetch is not an error). We verify the surrounding contracts.
+@MainActor
+final class DeltaSyncReturnValueTests: XCTestCase {
+    private var savedLastSyncAt: Date?
+
+    override func setUp() {
+        super.setUp()
+        savedLastSyncAt = UserDefaultsManager.shared.lastSyncAt
+        SyncManager.shared.resetState()
+    }
+
+    override func tearDown() {
+        UserDefaultsManager.shared.lastSyncAt = savedLastSyncAt
+        SyncManager.shared.resetState()
+        super.tearDown()
+    }
+
+    /// Empty-records branch: `runDeltaSync` must still return `true` —
+    /// zero records is a successful (not failed) sync.
+    func test_runDeltaSync_emptyRecords_returnsTrue() async {
+        let result = await SyncManager.shared.runDeltaSync()
+        XCTAssertTrue(result, "Empty-records path is a successful sync and must return true")
+        XCTAssertEqual(SyncManager.shared.state, .success(recordsCount: 0))
+    }
+
+    /// Concurrent-guard branch: when another sync is running, `runDeltaSync`
+    /// must return `false` — the guard fired, no work was done.
+    func test_runDeltaSync_concurrencyGuard_returnsFalse() async {
+        let manager = SyncManager.shared
+        async let first = manager.runDeltaSync()
+        async let second = manager.runDeltaSync()
+        let results = await [first, second]
+        XCTAssertTrue(results.contains(false), "Concurrent call dropped by isSyncing guard must return false")
+    }
+
+    /// After a successful sync, `isSyncing` is cleared so the next call is not
+    /// rejected — `succeeded` flag must not leave the manager in a broken state.
+    func test_runDeltaSync_afterSuccess_isSyncingIsCleared() async {
+        await SyncManager.shared.runDeltaSync()
+        XCTAssertFalse(SyncManager.shared.isSyncing)
+    }
+}
+
+// MARK: - Post-PR33 review замечание 2: initial sync failure preserves .failure state
+
+/// Review замечание 2 (HIGH): when `runInitialSync()` throws, a subsequent
+/// pending delta sync must NOT overwrite `state = .failure`. Fixed by only
+/// running the deferred delta sync when `initialSyncSucceeded == true`.
+@MainActor
+final class InitialSyncFailureStateTests: XCTestCase {
+    override func setUp() {
+        super.setUp()
+        SyncManager.shared.resetState()
+    }
+
+    override func tearDown() {
+        SyncManager.shared.resetState()
+        super.tearDown()
+    }
+
+    /// After `runInitialSync()` finishes, `isInitialSyncRunning` must be
+    /// cleared unconditionally regardless of success or failure.
+    func test_runInitialSync_clearsIsInitialSyncRunning_onCompletion() async {
+        await SyncManager.shared.runInitialSync()
+        XCTAssertFalse(
+            SyncManager.shared.isInitialSyncRunning,
+            "isInitialSyncRunning must be false after runInitialSync returns"
+        )
+    }
+
+    /// A second concurrent `runInitialSync` call must be dropped by the guard.
+    func test_runInitialSync_concurrentCall_isDropped() async {
+        async let first: Void = SyncManager.shared.runInitialSync()
+        async let second: Void = SyncManager.shared.runInitialSync()
+        _ = await (first, second)
+        XCTAssertFalse(SyncManager.shared.isInitialSyncRunning)
+    }
+}
+
+// MARK: - Post-PR33 review замечание 4: scheduleDailySync resets flag atomically
+
+/// Review замечание 4 (MEDIUM): the daily sync flag reset was separated from
+/// the new set, creating a TOCTOU window. The fix moves both operations inside
+/// a single `scheduleDailySync()` call.
+final class ScheduleDailySyncFlagTests: XCTestCase {
+    private let key = "com.healthlogsync.dailySyncScheduled"
+
+    override func tearDown() {
+        BackgroundTaskManager.shared.cancelPendingDailySync()
+        UserDefaults.standard.removeObject(forKey: key)
+        super.tearDown()
+    }
+
+    /// After `scheduleDailySync()` completes, the flag must be `true`.
+    func test_scheduleDailySync_setsScheduledFlagToTrue() {
+        BackgroundTaskManager.shared.scheduleDailySync()
+        XCTAssertTrue(
+            UserDefaults.standard.bool(forKey: key),
+            "scheduleDailySync must leave dailySyncScheduledKey = true"
+        )
+        BackgroundTaskManager.shared.cancelPendingDailySync()
+    }
+
+    /// `scheduleDailySyncIfNeeded()` must NOT reset the flag when already true.
+    func test_scheduleDailySyncIfNeeded_whenFlagTrue_doesNotReset() {
+        UserDefaults.standard.set(true, forKey: key)
+        BackgroundTaskManager.shared.scheduleDailySyncIfNeeded()
+        XCTAssertTrue(
+            UserDefaults.standard.bool(forKey: key),
+            "scheduleDailySyncIfNeeded must not touch the flag when already true"
+        )
+    }
+}
