@@ -109,7 +109,7 @@ jobs:
       - name: Install Periphery
         run: brew install peripheryapp/periphery/periphery
       - name: Scan for dead code
-        run: periphery scan --format github-actions
+        run: periphery scan --format github-actions --relative-results
 
   ui-tests:
     name: UI tests
