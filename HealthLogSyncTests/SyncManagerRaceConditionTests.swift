@@ -51,8 +51,8 @@ final class SyncManagerRaceConditionTests: XCTestCase {
         // they both observe state == .idle synchronously before the
         // first state mutation. Under the fix, the second observes
         // isSyncing == true and returns.
-        async let firstSync: Void = manager.runDeltaSync()
-        async let secondSync: Void = manager.runDeltaSync()
+        async let firstSync: Bool = manager.runDeltaSync()
+        async let secondSync: Bool = manager.runDeltaSync()
         _ = await (firstSync, secondSync)
 
         XCTAssertFalse(manager.isSyncing, "isSyncing must be cleared by defer after both calls return")

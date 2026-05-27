@@ -90,8 +90,8 @@ final class SyncManagerCrossCheckTests: XCTestCase {
     /// repeated here for cross-check scenario completeness).
     func test_runDeltaSync_concurrentCalls_onlyOneRunsAtATime() async {
         let manager = SyncManager.shared
-        async let first: Void = manager.runDeltaSync()
-        async let second: Void = manager.runDeltaSync()
+        async let first: Bool = manager.runDeltaSync()
+        async let second: Bool = manager.runDeltaSync()
         _ = await (first, second)
         XCTAssertFalse(manager.isSyncing)
     }
