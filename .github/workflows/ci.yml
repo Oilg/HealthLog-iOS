@@ -46,12 +46,50 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+      - name: Select iOS simulator
+        run: |
+          set -euo pipefail
+          # List only available iPhone devices, parse name + UDID, sort by iPhone number desc.
+          # Prefer iPhone 17, fall back to next available iPhone (16, 15, ...).
+          DEVICES_JSON=$(xcrun simctl list devices available --json)
+          UDID=$(echo "$DEVICES_JSON" | python3 -c "
+          import json, re, sys
+          data = json.load(sys.stdin)
+          candidates = []
+          for runtime, devices in data['devices'].items():
+              if 'iOS' not in runtime:
+                  continue
+              for d in devices:
+                  if not d.get('isAvailable'):
+                      continue
+                  name = d['name']
+                  m = re.match(r'^iPhone (\d+)(.*)$', name)
+                  if not m:
+                      continue
+                  major = int(m.group(1))
+                  rest = m.group(2)
+                  # Prefer plain models over Pro/Plus/Mini variants for determinism.
+                  variant_rank = 0 if rest.strip() == '' else 1
+                  candidates.append((major, variant_rank, name, d['udid']))
+          if not candidates:
+              sys.stderr.write('No available iPhone simulators found\n')
+              sys.exit(1)
+          # Highest major first; plain variant first within same major.
+          candidates.sort(key=lambda c: (-c[0], c[1], c[2]))
+          print(candidates[0][3])
+          ")
+          NAME=$(xcrun simctl list devices available | grep "$UDID" | head -n1 | sed -E 's/^[[:space:]]+//; s/ \(.*//')
+          echo "Selected simulator: $NAME ($UDID)"
+          echo "SIM_UDID=$UDID" >> "$GITHUB_ENV"
+          # Boot the simulator (idempotent) and wait until it is ready.
+          xcrun simctl boot "$UDID" 2>/dev/null || true
+          xcrun simctl bootstatus "$UDID" -b
       - name: Run unit tests with coverage
         run: |
           xcodebuild test \
             -scheme HealthLogSyncTests \
             -project HealthLogSync.xcodeproj \
-            -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' \
+            -destination "id=$SIM_UDID" \
             -enableCodeCoverage YES \
             -resultBundlePath TestResults.xcresult \
             CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
@@ -117,10 +155,43 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+      - name: Select iOS simulator
+        run: |
+          set -euo pipefail
+          DEVICES_JSON=$(xcrun simctl list devices available --json)
+          UDID=$(echo "$DEVICES_JSON" | python3 -c "
+          import json, re, sys
+          data = json.load(sys.stdin)
+          candidates = []
+          for runtime, devices in data['devices'].items():
+              if 'iOS' not in runtime:
+                  continue
+              for d in devices:
+                  if not d.get('isAvailable'):
+                      continue
+                  name = d['name']
+                  m = re.match(r'^iPhone (\d+)(.*)$', name)
+                  if not m:
+                      continue
+                  major = int(m.group(1))
+                  rest = m.group(2)
+                  variant_rank = 0 if rest.strip() == '' else 1
+                  candidates.append((major, variant_rank, name, d['udid']))
+          if not candidates:
+              sys.stderr.write('No available iPhone simulators found\n')
+              sys.exit(1)
+          candidates.sort(key=lambda c: (-c[0], c[1], c[2]))
+          print(candidates[0][3])
+          ")
+          NAME=$(xcrun simctl list devices available | grep "$UDID" | head -n1 | sed -E 's/^[[:space:]]+//; s/ \(.*//')
+          echo "Selected simulator: $NAME ($UDID)"
+          echo "SIM_UDID=$UDID" >> "$GITHUB_ENV"
+          xcrun simctl boot "$UDID" 2>/dev/null || true
+          xcrun simctl bootstatus "$UDID" -b
       - name: Run UI tests
         run: |
           xcodebuild test \
             -scheme HealthLogSyncUITests \
             -project HealthLogSync.xcodeproj \
-            -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' \
+            -destination "id=$SIM_UDID" \
             CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
