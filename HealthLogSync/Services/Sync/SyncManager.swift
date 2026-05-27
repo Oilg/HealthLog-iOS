@@ -169,6 +169,11 @@ final class SyncManager: ObservableObject {
             deltaTaskBox.value = UIApplication.shared.beginBackgroundTask(withName: "DeferredDeltaSync") {
                 deltaTaskBox.endIfNeeded()
             }
+            guard deltaTaskBox.value != .invalid else {
+                // iOS did not grant background execution time — skip deferred delta sync
+                // to avoid being killed mid-upload without a valid background task token.
+                return
+            }
             await runDeltaSync()
             deltaTaskBox.endIfNeeded()
         }

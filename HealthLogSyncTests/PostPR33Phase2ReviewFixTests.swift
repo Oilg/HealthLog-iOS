@@ -24,17 +24,20 @@ final class BackgroundTaskManagerDailySyncFlagTests: XCTestCase {
         super.tearDown()
     }
 
-    /// After `scheduleDailySync()` the flag must be `true`.
-    func test_scheduleDailySync_setsScheduledFlag() {
+    /// After `scheduleDailySync()` the flag reflects submit outcome.
+    /// In the test environment BGTaskScheduler rejects the submit, so the flag
+    /// must be `false` — the flag is only `true` when submit succeeds.
+    func test_scheduleDailySync_setsFlag_onlyWhenSubmitSucceeds() {
         BackgroundTaskManager.shared.scheduleDailySync()
-        XCTAssertTrue(
+        // BGTaskScheduler always rejects submit in the test target — flag must be false.
+        XCTAssertFalse(
             UserDefaults.standard.bool(forKey: scheduledKey),
-            "scheduleDailySync() must set the dailySyncScheduled flag to true"
+            "scheduleDailySync() must not set the flag when BGTaskScheduler.submit fails"
         )
     }
 
     /// `scheduleDailySyncIfNeeded()` with flag already `true` must not crash and
-    /// must leave the flag `true` (idempotent).
+    /// must leave the flag `true` (idempotent — guard fires before any submit attempt).
     func test_scheduleDailySyncIfNeeded_whenFlagAlreadyTrue_doesNotCrashAndKeepsFlag() {
         UserDefaults.standard.set(true, forKey: scheduledKey)
         BackgroundTaskManager.shared.scheduleDailySyncIfNeeded()
@@ -44,13 +47,16 @@ final class BackgroundTaskManagerDailySyncFlagTests: XCTestCase {
         )
     }
 
-    /// `scheduleDailySyncIfNeeded()` with flag `false` must set the flag after submit.
-    func test_scheduleDailySyncIfNeeded_whenFlagFalse_setsFlag() {
+    /// `scheduleDailySyncIfNeeded()` with flag `false` reflects submit outcome.
+    /// In the test environment BGTaskScheduler rejects the submit, so the flag
+    /// must remain `false` after the call.
+    func test_scheduleDailySyncIfNeeded_whenFlagFalse_setsFlag_onlyOnSuccess() {
         UserDefaults.standard.set(false, forKey: scheduledKey)
         BackgroundTaskManager.shared.scheduleDailySyncIfNeeded()
-        XCTAssertTrue(
+        // BGTaskScheduler always rejects submit in the test target — flag must be false.
+        XCTAssertFalse(
             UserDefaults.standard.bool(forKey: scheduledKey),
-            "scheduleDailySyncIfNeeded() must set the flag after submitting"
+            "scheduleDailySyncIfNeeded() must not set the flag when BGTaskScheduler.submit fails"
         )
     }
 }

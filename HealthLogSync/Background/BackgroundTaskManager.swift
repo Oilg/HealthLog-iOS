@@ -30,6 +30,11 @@ final class BackgroundTaskManager {
     /// valid same-day pending request when an immediate sync fires after 10:00.
     private let dailySyncScheduledKey = "com.healthlogsync.dailySyncScheduled"
 
+    /// Serialises access to the `dailySyncScheduledKey` flag and the surrounding
+    /// BGTaskScheduler submit calls to prevent TOCTOU races when `scheduleDailySync()`
+    /// and `scheduleDailySyncIfNeeded()` are invoked concurrently from different threads.
+    private let dailySyncLock = NSLock()
+
     private init() {}
 
     func registerTasks() {
@@ -53,14 +58,18 @@ final class BackgroundTaskManager {
 
     /// Schedules the regular daily sync at the next 10:00 local time.
     /// Cancels any pending daily sync first so duplicate requests are avoided.
+    /// Protected by `dailySyncLock` to prevent TOCTOU races with `scheduleDailySyncIfNeeded()`.
     func scheduleDailySync() {
-        cancelPendingDailySync()
-        // Reset flag before submit so the window between reset and set is contained
-        // within this single function call, eliminating the TOCTOU gap that existed
-        // when the reset was done separately in the daily task handler.
+        dailySyncLock.lock()
+        defer { dailySyncLock.unlock() }
+        // cancelPendingDailySync() is called without the lock held — it is
+        // a separate, non-recursive function that resets the flag itself.
+        // We replicate its effect here inside the lock boundary so the flag
+        // is always in a consistent state before submit.
+        BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: dailySyncTaskIdentifier)
         UserDefaults.standard.set(false, forKey: dailySyncScheduledKey)
-        submitDailySyncRequest()
-        UserDefaults.standard.set(true, forKey: dailySyncScheduledKey)
+        let submitted = submitDailySyncRequest()
+        UserDefaults.standard.set(submitted, forKey: dailySyncScheduledKey)
     }
 
     /// Schedules the regular daily sync only when no pending request is already
@@ -68,16 +77,20 @@ final class BackgroundTaskManager {
     /// *replaces* an existing pending request with the same identifier, so calling
     /// it unconditionally after 10:00 would push today's already-queued daily sync
     /// to tomorrow, silently skipping one day.
+    /// Protected by `dailySyncLock` to prevent TOCTOU races with `scheduleDailySync()`.
     func scheduleDailySyncIfNeeded() {
+        dailySyncLock.lock()
+        defer { dailySyncLock.unlock() }
         guard !UserDefaults.standard.bool(forKey: dailySyncScheduledKey) else {
             log.info("Daily sync already scheduled — skipping submit")
             return
         }
-        submitDailySyncRequest()
-        UserDefaults.standard.set(true, forKey: dailySyncScheduledKey)
+        let submitted = submitDailySyncRequest()
+        UserDefaults.standard.set(submitted, forKey: dailySyncScheduledKey)
     }
 
-    private func submitDailySyncRequest() {
+    @discardableResult
+    private func submitDailySyncRequest() -> Bool {
         let request = BGProcessingTaskRequest(identifier: dailySyncTaskIdentifier)
         request.requiresNetworkConnectivity = true
         request.requiresExternalPower = false
@@ -91,8 +104,11 @@ final class BackgroundTaskManager {
 
         do {
             try BGTaskScheduler.shared.submit(request)
+            log.info("Daily sync BGProcessingTask submitted successfully")
+            return true
         } catch {
-            log.error("scheduleDailySync submit failed: \(error.localizedDescription, privacy: .public)")
+            log.error("Failed to submit daily sync task: \(error.localizedDescription, privacy: .public)")
+            return false
         }
     }
 
@@ -119,6 +135,8 @@ final class BackgroundTaskManager {
 
     func cancelPendingDailySync() {
         BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: dailySyncTaskIdentifier)
+        UserDefaults.standard.set(false, forKey: dailySyncScheduledKey)
+        log.info("Pending daily sync cancelled and flag cleared")
     }
 
     func cancelPendingImmediateSync() {
