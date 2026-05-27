@@ -172,9 +172,7 @@ final class SyncManager: ObservableObject {
             guard deltaTaskBox.value != .invalid else {
                 // iOS did not grant background execution time — skip deferred delta sync.
                 // The flag is cleared here for consistency: runInitialSync() resets
-                // pendingDeltaSyncAfterInitial at the top of every call anyway, and
-                // any future HKObserver events will trigger runDeltaSync() directly
-                // (isInitialSyncRunning is already false at this point).
+                // pendingDeltaSyncAfterInitial at the top of every call anyway.
                 pendingDeltaSyncAfterInitial = false
                 return
             }

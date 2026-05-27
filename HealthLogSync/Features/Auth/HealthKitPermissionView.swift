@@ -71,18 +71,6 @@ struct HealthKitPermissionView: View {
             try await HealthKitManager.shared.requestAuthorization()
             UserDefaultsManager.shared.healthKitAuthorized = true
             appState.isHealthKitAuthorized = true
-
-            // Background delivery + observers can only be enabled for
-            // authorized types. AppDelegate's launch-time call no-ops for a
-            // new user who hasn't accepted the HealthKit prompt yet — kick
-            // off the installation now that we have authorization, otherwise
-            // background sync wouldn't start until the next app launch.
-            HealthKitManager.shared.enableBackgroundDeliveryAndStartObservers {
-                Task { @MainActor in
-                    SyncManager.shared.resetState()
-                    await SyncManager.shared.runDeltaSync()
-                }
-            }
         } catch {
             errorMessage = error.localizedDescription
         }
