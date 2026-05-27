@@ -196,7 +196,9 @@ final class DailySyncLockThreadSafetyTests: XCTestCase {
     }
 
     /// Interleaved `scheduleDailySync()` + `cancelPendingDailySync()` from multiple
-    /// threads must not crash (cancel does not hold the lock — no deadlock risk).
+    /// threads must not crash (cancelPendingDailySync() acquires dailySyncLock for its flag reset — no deadlock risk:
+    /// scheduleDailySync also holds dailySyncLock but neither function calls the other
+    /// while holding the lock, so contention is possible but deadlock is not).
     func test_scheduleDailySync_andCancel_concurrentlyDoNotCrash() {
         let group = DispatchGroup()
 

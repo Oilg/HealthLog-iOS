@@ -104,6 +104,7 @@ final class SyncManager: ObservableObject {
         // Also block when a delta sync is running — same overlapping-window risk.
         guard !isInitialSyncRunning, !isSyncing else { return }
         isInitialSyncRunning = true
+        pendingDeltaSyncAfterInitial = false // reset stale flag from any previous session
 
         // Use BackgroundTaskBox (a reference-type wrapper with NSLock) so the
         // expiration handler (background thread) and this @MainActor body share

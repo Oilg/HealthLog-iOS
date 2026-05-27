@@ -144,9 +144,9 @@ final class BackgroundTaskManager {
     }
 
     func cancelPendingDailySync() {
-        BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: dailySyncTaskIdentifier)
         dailySyncLock.lock()
         defer { dailySyncLock.unlock() }
+        BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: dailySyncTaskIdentifier)
         UserDefaults.standard.set(false, forKey: dailySyncScheduledKey)
         log.info("Pending daily sync cancelled and flag cleared")
     }
