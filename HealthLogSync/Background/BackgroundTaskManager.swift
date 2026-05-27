@@ -166,14 +166,13 @@ final class BackgroundTaskManager {
             // Reset state so a previous .success/.failure from a prior run does not
             // make runDeltaSync exit immediately via its `guard case .idle = state`.
             SyncManager.shared.resetState()
-            // runDeltaSync returns false either when another sync is already running
-            // (concurrency guard fired) or when the sync threw an error (fix 1).
-            // When another sync is already running, the work is being done — treat
-            // as success so iOS does not retry unnecessarily. Real errors are also
-            // reported as success here because iOS retry on failure can cause a
-            // cascade when daily+immediate tasks fire simultaneously; errors are
-            // surfaced via SyncManager.state = .failure for the UI.
             _ = await SyncManager.shared.runDeltaSync()
+            // Always report success=true to iOS regardless of whether the sync ran.
+            // Reporting success=false (e.g. when another sync was already running) causes
+            // iOS BGTaskScheduler to retry the task, which can create a cascade when
+            // daily and immediate tasks fire simultaneously. Errors are surfaced through
+            // SyncManager.state = .failure for the UI; BGTask completion is
+            // intentionally optimistic.
             completeOnce(true)
         }
 

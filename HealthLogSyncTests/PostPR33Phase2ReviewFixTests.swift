@@ -1,5 +1,5 @@
-@testable import HealthLogSync
 import XCTest
+@testable import HealthLogSync
 
 // MARK: - Fix 1 (CRITICAL): dailySyncScheduledKey prevents BGTaskScheduler.submit replacing pending daily
 
@@ -114,10 +114,8 @@ final class SyncManagerPendingDeltaAfterInitialTests: XCTestCase {
         super.tearDown()
     }
 
-    /// `runDeltaSync()` must return `false` when blocked by `isSyncing`.
-    func test_runDeltaSync_returnsFalse_whenIsSyncingIsTrue() async {
-        // We cannot easily set isSyncing=true externally, but we can verify the
-        // return type compiles and that at rest (isSyncing=false) it returns true.
+    /// `runDeltaSync()` must return `true` when a sync completes normally.
+    func test_runDeltaSync_returnsTrue_whenSyncCompletesNormally() async {
         let result = await SyncManager.shared.runDeltaSync()
         XCTAssertTrue(result, "runDeltaSync must return true when no sync is blocking")
     }
@@ -184,9 +182,12 @@ final class ResetStateInitialSyncGuardTests: XCTestCase {
 
 // MARK: - Fix 6 (MEDIUM): runDeltaSync returns Bool used by handleSyncTask
 
-/// `BackgroundTaskManager.handleSyncTask` previously called `completeOnce(true)`
-/// unconditionally, reporting success even when `runDeltaSync` did nothing due to
-/// the guard. The fix uses the `Bool` return value: `completeOnce(didSync)`.
+/// Validates the `completeOnce` concurrency pattern in isolation.
+/// NOTE: `BackgroundTaskManager.handleSyncTask` deliberately calls
+/// `completeOnce(true)` unconditionally — the Bool return from
+/// `runDeltaSync()` is intentionally ignored there to avoid BGTask
+/// retry cascades. These tests verify the underlying locking contract,
+/// not whether handleSyncTask passes `didSync`.
 final class BGTaskCompletionTruthTests: XCTestCase {
     /// The `completeOnce` pattern still collapses concurrent calls to one.
     /// This is the same test shape as `BackgroundTaskCompletionTests` but

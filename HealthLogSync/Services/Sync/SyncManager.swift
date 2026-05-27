@@ -153,6 +153,7 @@ final class SyncManager: ObservableObject {
             initialSyncSucceeded = true
         } catch {
             state = .failure(error)
+            pendingDeltaSyncAfterInitial = false // don't carry stale flag into next retry
         }
 
         taskBox.endIfNeeded()
