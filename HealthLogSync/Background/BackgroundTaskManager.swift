@@ -20,11 +20,23 @@ final class BackgroundTaskManager {
     private let immediateSyncTaskIdentifier = "com.healthlogsync.immediatesync"
     private let log = Logger(subsystem: "com.healthlogsync", category: "BackgroundTask")
 
+    /// UserDefaults key tracking whether a daily sync BGProcessingTask is already
+    /// pending. Set to `true` after each `submit`, cleared at the start of the
+    /// daily task handler so the next foreground/immediate-sync can re-schedule.
+    ///
+    /// BGTaskScheduler.submit(_:) **replaces** any existing pending request with
+    /// the same identifier (contrary to older docs that described it as a no-op).
+    /// Tracking the flag ourselves is the only reliable way to avoid clobbering a
+    /// valid same-day pending request when an immediate sync fires after 10:00.
+    private let dailySyncScheduledKey = "com.healthlogsync.dailySyncScheduled"
+
     private init() {}
 
     func registerTasks() {
         BGTaskScheduler.shared.register(forTaskWithIdentifier: dailySyncTaskIdentifier, using: nil) { task in
             guard let processingTask = task as? BGProcessingTask else { return }
+            // Clear the flag so immediate/foreground syncs can re-schedule next daily run.
+            UserDefaults.standard.set(false, forKey: self.dailySyncScheduledKey)
             self.handleSyncTask(processingTask, rescheduleDailyReplacingExisting: true)
         }
         BGTaskScheduler.shared.register(forTaskWithIdentifier: immediateSyncTaskIdentifier, using: nil) { task in
@@ -32,9 +44,9 @@ final class BackgroundTaskManager {
             // Immediate sync is one-shot but we MUST still ensure the daily sync
             // is scheduled. When iOS launches a killed app via BGProcessingTask,
             // no other code path calls scheduleDailySync(). We use
-            // scheduleDailySyncIfNeeded() (no cancel-first) so that an existing
-            // daily sync pending for today is NOT discarded — cancelling it here
-            // would push the next run to tomorrow and skip one day.
+            // scheduleDailySyncIfNeeded() (flag-guarded) so that an existing
+            // daily sync pending for today is NOT discarded — submitting again
+            // would replace it and push the next run to tomorrow, skipping one day.
             self.handleSyncTask(processingTask, rescheduleDailyReplacingExisting: false)
         }
     }
@@ -44,15 +56,21 @@ final class BackgroundTaskManager {
     func scheduleDailySync() {
         cancelPendingDailySync()
         submitDailySyncRequest()
+        UserDefaults.standard.set(true, forKey: dailySyncScheduledKey)
     }
 
-    /// Schedules the regular daily sync without cancelling a potentially pending
-    /// request first. Used from the immediate-sync handler where an existing daily
-    /// sync may already be pending for today: cancelling + rescheduling it would
-    /// push the next run to tomorrow, skipping one day. BGTaskScheduler silently
-    /// ignores duplicate submissions for the same identifier, so this is safe.
+    /// Schedules the regular daily sync only when no pending request is already
+    /// tracked. Used from the immediate-sync handler: BGTaskScheduler.submit(_:)
+    /// *replaces* an existing pending request with the same identifier, so calling
+    /// it unconditionally after 10:00 would push today's already-queued daily sync
+    /// to tomorrow, silently skipping one day.
     func scheduleDailySyncIfNeeded() {
+        guard !UserDefaults.standard.bool(forKey: dailySyncScheduledKey) else {
+            log.info("Daily sync already scheduled — skipping submit")
+            return
+        }
         submitDailySyncRequest()
+        UserDefaults.standard.set(true, forKey: dailySyncScheduledKey)
     }
 
     private func submitDailySyncRequest() {
@@ -144,8 +162,11 @@ final class BackgroundTaskManager {
             // Reset state so a previous .success/.failure from a prior run does not
             // make runDeltaSync exit immediately via its `guard case .idle = state`.
             SyncManager.shared.resetState()
-            await SyncManager.shared.runDeltaSync()
-            completeOnce(true)
+            // runDeltaSync returns true if sync actually ran, false if dropped by guard
+            // (another sync already in progress). Report success=false to iOS when
+            // nothing was done so it does not count a no-op as a successful execution.
+            let didSync = await SyncManager.shared.runDeltaSync()
+            completeOnce(didSync)
         }
 
         task.expirationHandler = {

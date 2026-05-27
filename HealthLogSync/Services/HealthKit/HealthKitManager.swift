@@ -193,10 +193,12 @@ final class HealthKitManager {
     /// hop onto the main actor themselves if they touch main-actor state.
     func enableBackgroundDeliveryAndStartObservers(onSampleAvailable: @escaping @Sendable () -> Void) {
         guard isAvailable else { return }
-        guard UserDefaultsManager.shared.healthKitAuthorized else {
-            log.info("enableBackgroundDelivery skipped — HealthKit not yet authorized")
-            return
-        }
+        // The `UserDefaultsManager.healthKitAuthorized` flag is set only through
+        // `HealthKitPermissionView`. After a reinstall, UserDefaults wipe, or
+        // authorization change through iOS Settings the flag may be stale-false
+        // while HealthKit access is still valid. `enableBackgroundDelivery` for an
+        // unauthorized type returns an error in its callback (logged, not fatal),
+        // so it is safe to attempt unconditionally when the device supports HealthKit.
 
         for (identifier, frequency) in Self.backgroundDeliveryQuantityTypes {
             guard let type = HKQuantityType.quantityType(forIdentifier: identifier) else { continue }

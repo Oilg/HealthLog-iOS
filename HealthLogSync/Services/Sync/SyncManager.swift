@@ -40,15 +40,32 @@ final class SyncManager: ObservableObject {
     /// the main actor, so reading and flipping it is atomic by construction.
     private(set) var isSyncing = false
 
+    /// Set to `true` when `runDeltaSync()` is called while `isInitialSyncRunning`
+    /// is `true` — i.e. a HKObserver event arrived during initial sync. After
+    /// `runInitialSync` finishes it checks this flag and runs one delta sync so
+    /// no observer events are permanently lost.
+    private var pendingDeltaSyncAfterInitial = false
+
     private init() {}
 
-    func runDeltaSync() async {
+    /// Runs a delta sync.
+    /// - Returns: `true` if a sync was actually performed (guard passed and sync ran),
+    ///   `false` if the call was dropped because another sync is already in progress.
+    ///   The return value is marked `@discardableResult` so existing call sites that
+    ///   do not need the value compile without change.
+    @discardableResult
+    func runDeltaSync() async -> Bool {
         // Atomic on @MainActor: both read and write happen on the same
         // executor, so two concurrent callers cannot both pass this guard.
         // Also block when an initial sync is in progress — both operations
         // fetch from overlapping HealthKit windows and would produce
-        // duplicate uploads.
-        guard !isSyncing, !isInitialSyncRunning else { return }
+        // duplicate uploads. When blocked by initial sync, set a pending flag
+        // so runInitialSync() triggers one delta sync when it completes,
+        // ensuring HKObserver events received during initial sync are not lost.
+        guard !isSyncing, !isInitialSyncRunning else {
+            if isInitialSyncRunning { pendingDeltaSyncAfterInitial = true }
+            return false
+        }
         isSyncing = true
         defer { isSyncing = false }
 
@@ -65,7 +82,7 @@ final class SyncManager: ObservableObject {
                 // upload in SyncService.uploadRecords(), preserving the from-window
                 // until real data is delivered.
                 state = .success(recordsCount: 0)
-                return
+                return true
             }
 
             var totalSynced = 0
@@ -78,6 +95,7 @@ final class SyncManager: ObservableObject {
         } catch {
             state = .failure(error)
         }
+        return true
     }
 
     func runInitialSync() async {
@@ -85,10 +103,12 @@ final class SyncManager: ObservableObject {
         guard !isInitialSyncRunning, !isSyncing else { return }
         isInitialSyncRunning = true
 
-        var bgTaskID = UIBackgroundTaskIdentifier.invalid
-        bgTaskID = UIApplication.shared.beginBackgroundTask(withName: "InitialSync") {
-            UIApplication.shared.endBackgroundTask(bgTaskID)
-            bgTaskID = .invalid
+        // Use BackgroundTaskBox (a reference-type wrapper with NSLock) so the
+        // expiration handler (background thread) and this @MainActor body share
+        // the identifier safely — same pattern as `runSilentPushSync` in AppDelegate.
+        let taskBox = BackgroundTaskBox()
+        taskBox.value = UIApplication.shared.beginBackgroundTask(withName: "InitialSync") {
+            taskBox.endIfNeeded()
         }
 
         do {
@@ -131,10 +151,15 @@ final class SyncManager: ObservableObject {
             state = .failure(error)
         }
 
-        if bgTaskID != .invalid {
-            UIApplication.shared.endBackgroundTask(bgTaskID)
-        }
+        taskBox.endIfNeeded()
         isInitialSyncRunning = false
+
+        // If a HKObserver event arrived during initial sync, run one delta sync
+        // now so those samples are not permanently lost.
+        if pendingDeltaSyncAfterInitial {
+            pendingDeltaSyncAfterInitial = false
+            await runDeltaSync()
+        }
     }
 
     func resetState() {
@@ -142,9 +167,19 @@ final class SyncManager: ObservableObject {
         // resetting state while a sync is in flight would clear the progress
         // indicator and unblock the `isSyncing` guard prematurely (it doesn't,
         // because `isSyncing` is independent, but the published `state` would
-        // become stale/misleading). If a sync is already running, this call
-        // is a no-op.
-        guard !isSyncing else { return }
+        // become stale/misleading). Also guard on `isInitialSyncRunning` because
+        // initial sync holds `isSyncing = false` while it runs, so without this
+        // check `resetState()` would overwrite the in-progress state.
+        guard !isSyncing, !isInitialSyncRunning else { return }
+        state = .idle
+    }
+
+    /// Clears a stale `.failure` state without checking the sync-running flags.
+    /// Use in `applicationWillEnterForeground` to remove a lingering error banner
+    /// even when a sync is in progress (the banner should not survive a foreground
+    /// transition regardless of whether the app is currently syncing).
+    func clearFailureState() {
+        guard case .failure = state else { return }
         state = .idle
     }
 }

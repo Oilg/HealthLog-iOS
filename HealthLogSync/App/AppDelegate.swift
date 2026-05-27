@@ -35,10 +35,15 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         // (battery, killed state, BGProcessingTask budget) frequently suppresses
         // silent pushes and BGAppRefresh, so a user-initiated foreground brings
         // us the only deterministic opportunity to push fresh HealthKit data to
-        // the server. resetState() unblocks the .idle guard in runDeltaSync()
-        // when the previous run left us in .success/.failure — exactly the same
-        // pattern the analysis-ready push path already uses below.
+        // the server.
+        //
+        // clearFailureState() runs unconditionally so a stale .failure banner from
+        // a previous session is dismissed immediately on foreground, even when a
+        // sync is already in progress (in which case resetState() would be a no-op).
+        // resetState() then unblocks the .idle guard in runDeltaSync() when the
+        // previous run left us in .success.
         Task { @MainActor in
+            SyncManager.shared.clearFailureState()
             SyncManager.shared.resetState()
             await SyncManager.shared.runDeltaSync()
         }
@@ -196,9 +201,9 @@ extension Notification.Name {
 
 /// Thread-safe wrapper for `UIBackgroundTaskIdentifier`.
 /// Shared between the expiration handler (background thread) and the
-/// MainActor Task in `runSilentPushSync` to avoid a data race on a
-/// captured `var`.
-private final class BackgroundTaskBox {
+/// MainActor Task in `runSilentPushSync` / `runInitialSync` to avoid a
+/// data race on a captured `var`.
+final class BackgroundTaskBox {
     private let lock = NSLock()
     private var identifier = UIBackgroundTaskIdentifier.invalid
 
