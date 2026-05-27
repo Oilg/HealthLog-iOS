@@ -3,11 +3,10 @@ import XCTest
 
 /// Bug 1 from post-PR33 review: `SyncManager.runDeltaSync()` previously
 /// guarded only on `state == .idle`. After we started calling
-/// `resetState()` from AppDelegate / BackgroundTaskManager / HK observer
-/// callbacks immediately before each `runDeltaSync()`, two concurrent
-/// callers could both flip the state to `.idle`, both pass the guard, and
-/// run two simultaneous syncs — duplicate uploads and racing `lastSyncAt`
-/// writes.
+/// `resetState()` from BackgroundTaskManager / silent-push handler
+/// immediately before each `runDeltaSync()`, two concurrent callers could
+/// both flip the state to `.idle`, both pass the guard, and run two
+/// simultaneous syncs — duplicate uploads and racing `lastSyncAt` writes.
 ///
 /// The fix introduces an `isSyncing` flag, mutated only on the main actor,
 /// flipped to `true` synchronously before the first `await`. These tests

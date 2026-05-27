@@ -10,43 +10,11 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         BackgroundTaskManager.shared.scheduleDailySync()
         UNUserNotificationCenter.current().delegate = self
         requestNotificationPermission()
-        startHealthKitBackgroundObservation()
         return true
-    }
-
-    /// Wires HealthKit background delivery + observer so the watch pushing new
-    /// samples to the iPhone wakes us up and triggers a sync. Independent of
-    /// silent pushes — this is the primary, OS-managed path.
-    private func startHealthKitBackgroundObservation() {
-        HealthKitManager.shared.enableBackgroundDeliveryAndStartObservers {
-            // HKObserverQuery callback runs on a background queue.
-            // SyncManager is @MainActor — hop over before touching it.
-            Task { @MainActor in
-                SyncManager.shared.resetState()
-                await SyncManager.shared.runDeltaSync()
-            }
-        }
     }
 
     func applicationWillEnterForeground(_: UIApplication) {
         BackgroundTaskManager.shared.scheduleDailySync()
-
-        // Foreground is the most reliable trigger we have. iOS background policy
-        // (battery, killed state, BGProcessingTask budget) frequently suppresses
-        // silent pushes and BGAppRefresh, so a user-initiated foreground brings
-        // us the only deterministic opportunity to push fresh HealthKit data to
-        // the server.
-        //
-        // clearFailureState() runs unconditionally so a stale .failure banner from
-        // a previous session is dismissed immediately on foreground, even when a
-        // sync is already in progress (in which case resetState() would be a no-op).
-        // resetState() then unblocks the .idle guard in runDeltaSync() when the
-        // previous run left us in .success.
-        Task { @MainActor in
-            SyncManager.shared.clearFailureState()
-            SyncManager.shared.resetState()
-            await SyncManager.shared.runDeltaSync()
-        }
     }
 
     private func requestNotificationPermission() {
