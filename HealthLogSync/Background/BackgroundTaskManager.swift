@@ -34,10 +34,13 @@ final class BackgroundTaskManager {
     /// BGTaskScheduler submit calls to prevent TOCTOU races when `scheduleDailySync()`
     /// and `scheduleDailySyncIfNeeded()` are invoked concurrently from different threads.
     private let dailySyncLock = NSLock()
+    private var tasksRegistered = false
 
     private init() {}
 
     func registerTasks() {
+        guard !tasksRegistered else { return }
+        tasksRegistered = true
         BGTaskScheduler.shared.register(forTaskWithIdentifier: dailySyncTaskIdentifier, using: nil) { task in
             guard let processingTask = task as? BGProcessingTask else { return }
             // Flag reset is handled atomically inside scheduleDailySync() which is

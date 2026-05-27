@@ -1,5 +1,5 @@
-@testable import HealthLogSync
 import XCTest
+@testable import HealthLogSync
 
 /// Regression tests for the "sync on every app open" bug.
 ///
