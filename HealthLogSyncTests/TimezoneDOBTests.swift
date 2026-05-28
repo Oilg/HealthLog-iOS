@@ -218,6 +218,15 @@ final class TimezoneDOBTests: XCTestCase {
         XCTAssertEqual(AppDelegate.extractAction(from: userInfo), "open_profile")
     }
 
+    /// Real APNs payloads decode the nested `data` dictionary as `[String: Any]`,
+    /// not `[AnyHashable: Any]`. The extractor must handle both shapes so push
+    /// routing works regardless of how iOS hands the userInfo to the delegate.
+    func test_extractAction_readsNestedDataActionWithStringKeys() {
+        let nested: [String: Any] = ["action": "open_profile"]
+        let userInfo: [AnyHashable: Any] = ["data": nested]
+        XCTAssertEqual(AppDelegate.extractAction(from: userInfo), "open_profile")
+    }
+
     func test_extractAction_returnsNilWhenAbsent() {
         let userInfo: [AnyHashable: Any] = ["type": "analysis_ready"]
         XCTAssertNil(AppDelegate.extractAction(from: userInfo))
