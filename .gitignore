@@ -22,4 +22,6 @@ fastlane/test_output/
 *.ipa
 *.dSYM.zip
 .claude/worktrees/
+.claude/launch.json
+.claude/mockup/
 *.xcodeproj/project.xcworkspace/
