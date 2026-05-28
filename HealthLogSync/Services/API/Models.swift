@@ -14,11 +14,43 @@ struct RegisterRequest: Encodable {
     let email: String
     let phone: String
     let password: String
+    let timezone: String
 
     enum CodingKeys: String, CodingKey {
-        case sex, email, phone, password
+        case sex, email, phone, password, timezone
         case firstName = "first_name"
         case lastName = "last_name"
+    }
+}
+
+struct UpdateProfileRequest: Encodable {
+    let timezone: String?
+    let dateOfBirth: String?
+
+    enum CodingKeys: String, CodingKey {
+        case timezone
+        case dateOfBirth = "date_of_birth"
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        if let timezone {
+            try container.encode(timezone, forKey: .timezone)
+        }
+        if let dateOfBirth {
+            try container.encode(dateOfBirth, forKey: .dateOfBirth)
+        }
+    }
+}
+
+struct UserProfileResponse: Decodable {
+    let email: String
+    let timezone: String?
+    let dateOfBirth: String?
+
+    enum CodingKeys: String, CodingKey {
+        case email, timezone
+        case dateOfBirth = "date_of_birth"
     }
 }
 

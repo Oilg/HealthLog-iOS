@@ -36,7 +36,28 @@ final class HealthKitManager {
 
     func requestAuthorization() async throws {
         guard isAvailable else { return }
-        try await store.requestAuthorization(toShare: [], read: HealthKitTypes.allReadTypes)
+        try await store.requestAuthorization(toShare: [], read: HealthKitTypes.authorizationReadTypes)
+    }
+
+    /// Reads the user's date of birth from HealthKit if available.
+    /// Returns `nil` when:
+    /// - HealthKit data is unavailable on this device
+    /// - The user has not set a DOB in the Health app
+    /// - Authorization was not granted (HealthKit throws `noDataAvailable`)
+    /// Never throws — callers treat absence as "no DOB to sync".
+    func fetchDateOfBirth() -> DateComponents? {
+        guard isAvailable else { return nil }
+        do {
+            let components = try store.dateOfBirthComponents()
+            // Health app allows blank DOB which returns components with nil fields.
+            guard components.year != nil, components.month != nil, components.day != nil else {
+                return nil
+            }
+            return components
+        } catch {
+            log.info("dateOfBirthComponents unavailable: \(error.localizedDescription, privacy: .public)")
+            return nil
+        }
     }
 
     func fetchRecords(from startDate: Date, to endDate: Date) async -> [HealthRecord] {

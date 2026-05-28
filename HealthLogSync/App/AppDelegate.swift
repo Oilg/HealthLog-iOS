@@ -142,7 +142,8 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
-        let type = notification.request.content.userInfo["type"] as? String
+        let userInfo = notification.request.content.userInfo
+        let type = userInfo["type"] as? String
         if type == "analysis_ready" {
             NotificationCenter.default.post(name: .analysisReady, object: nil)
         }
@@ -155,16 +156,37 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
-        let type = response.notification.request.content.userInfo["type"] as? String
+        let userInfo = response.notification.request.content.userInfo
+        let type = userInfo["type"] as? String
         if type == "analysis_ready" {
             NotificationCenter.default.post(name: .analysisReady, object: nil)
         }
+
+        // The backend may put the action either at the top level or nested under "data"
+        // (FCM-style payload). Check both locations so iOS-side handling is resilient
+        // to how the push is composed server-side.
+        if AppDelegate.extractAction(from: userInfo) == "open_profile" {
+            NotificationCenter.default.post(name: .openProfile, object: nil)
+        }
+
         completionHandler()
+    }
+
+    /// Returns the `action` field from a push payload, supporting both
+    /// top-level (`userInfo["action"]`) and nested (`userInfo["data"]["action"]`) shapes.
+    /// Internal for unit testing.
+    static func extractAction(from userInfo: [AnyHashable: Any]) -> String? {
+        if let action = userInfo["action"] as? String {
+            return action
+        }
+        let data = userInfo["data"] as? [AnyHashable: Any]
+        return data?["action"] as? String
     }
 }
 
 extension Notification.Name {
     static let analysisReady = Notification.Name("com.healthlogsync.analysisReady")
+    static let openProfile = Notification.Name("com.healthlogsync.openProfile")
 }
 
 /// Thread-safe wrapper for `UIBackgroundTaskIdentifier`.
