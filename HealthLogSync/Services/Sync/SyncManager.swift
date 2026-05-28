@@ -160,26 +160,39 @@ final class SyncManager: ObservableObject {
         taskBox.endIfNeeded()
         isInitialSyncRunning = false
 
+        // Push date of birth from HealthKit to the backend (best-effort, silent).
+        // Backend uses DOB to gate age-aware risk thresholds. ProfileSyncService
+        // tracks completion in UserDefaults so this runs at most once successfully.
+        // Runs only after a successful initial sync — failed sync skips this.
+        if initialSyncSucceeded {
+            await ProfileSyncService.shared.fetchAndSyncDOB()
+        }
+
         // Only trigger pending delta sync if initial sync completed successfully.
         // If initial sync failed, leave state = .failure so the user sees the error.
         if initialSyncSucceeded, pendingDeltaSyncAfterInitial {
-            // Acquire a new background task for the deferred delta sync so iOS
-            // does not suspend the process mid-upload.
-            let deltaTaskBox = BackgroundTaskBox()
-            deltaTaskBox.value = UIApplication.shared.beginBackgroundTask(withName: "DeferredDeltaSync") {
-                deltaTaskBox.endIfNeeded()
-            }
-            guard deltaTaskBox.value != .invalid else {
-                // iOS did not grant background execution time — skip deferred delta sync.
-                // The flag is cleared here for consistency: runInitialSync() resets
-                // pendingDeltaSyncAfterInitial at the top of every call anyway.
-                pendingDeltaSyncAfterInitial = false
-                return
-            }
-            pendingDeltaSyncAfterInitial = false
-            await runDeltaSync()
+            await runDeferredDeltaSyncAfterInitial()
+        }
+    }
+
+    /// Runs the delta sync that was deferred because a HKObserver event arrived
+    /// during `runInitialSync`. Wraps the call in its own background-task so iOS
+    /// keeps the process alive through the upload.
+    private func runDeferredDeltaSyncAfterInitial() async {
+        let deltaTaskBox = BackgroundTaskBox()
+        deltaTaskBox.value = UIApplication.shared.beginBackgroundTask(withName: "DeferredDeltaSync") {
             deltaTaskBox.endIfNeeded()
         }
+        guard deltaTaskBox.value != .invalid else {
+            // iOS did not grant background execution time — skip deferred delta sync.
+            // The flag is cleared here for consistency: runInitialSync() resets
+            // pendingDeltaSyncAfterInitial at the top of every call anyway.
+            pendingDeltaSyncAfterInitial = false
+            return
+        }
+        pendingDeltaSyncAfterInitial = false
+        await runDeltaSync()
+        deltaTaskBox.endIfNeeded()
     }
 
     func resetState() {

@@ -56,4 +56,25 @@ enum HealthKitTypes {
         }
         return types
     }
+
+    /// Characteristic types (date of birth, biological sex, etc.) are queried via
+    /// `HKHealthStore` directly and not as samples, but they must still be included
+    /// in `requestAuthorization(read:)`.
+    static var characteristicReadTypes: Set<HKObjectType> {
+        var types = Set<HKObjectType>()
+        if let dob = HKCharacteristicType.characteristicType(forIdentifier: .dateOfBirth) {
+            types.insert(dob)
+        }
+        return types
+    }
+
+    /// Union of all read types (samples + characteristics) passed to
+    /// `HKHealthStore.requestAuthorization(toShare:read:)`.
+    static var authorizationReadTypes: Set<HKObjectType> {
+        var types: Set<HKObjectType> = allReadTypes.reduce(into: Set<HKObjectType>()) { acc, type in
+            acc.insert(type)
+        }
+        types.formUnion(characteristicReadTypes)
+        return types
+    }
 }

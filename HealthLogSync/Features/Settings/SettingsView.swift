@@ -7,6 +7,28 @@ struct SettingsView: View {
     @State private var isDeletingAccount = false
     @State private var deleteError: String?
 
+    @State private var dateOfBirth: Date?
+    @State private var isLoadingProfile = false
+    @State private var dobErrorMessage: String?
+    @State private var pendingDOBSave: Task<Void, Never>?
+
+    private static let isoDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(identifier: "UTC")
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
+
+    private var dobRange: ClosedRange<Date> {
+        let calendar = Calendar.current
+        let now = Date()
+        let lower = calendar.date(byAdding: .year, value: -130, to: now) ?? now
+        let upper = calendar.date(byAdding: .year, value: -5, to: now) ?? now
+        return lower ... upper
+    }
+
     var body: some View {
         NavigationStack {
             List {
@@ -14,6 +36,9 @@ struct SettingsView: View {
                     if let email = UserDefaultsManager.shared.userEmail {
                         LabeledContent("Email", value: email)
                     }
+
+                    profileSection
+
                     Button(role: .destructive) {
                         showLogoutConfirmation = true
                     } label: {
@@ -88,6 +113,84 @@ struct SettingsView: View {
             } message: {
                 Text("Все ваши данные здоровья и история анализов будут удалены. Это действие нельзя отменить.")
             }
+        }
+        .task { await loadProfile() }
+    }
+
+    @ViewBuilder
+    private var profileSection: some View {
+        if isLoadingProfile {
+            HStack {
+                Text("Дата рождения")
+                Spacer()
+                ProgressView()
+            }
+        } else {
+            DatePicker(
+                "Дата рождения",
+                selection: Binding(
+                    get: { dateOfBirth ?? defaultDOB() },
+                    set: { newValue in
+                        dateOfBirth = newValue
+                        scheduleDOBSave(newValue)
+                    }
+                ),
+                in: dobRange,
+                displayedComponents: .date
+            )
+            .datePickerStyle(.compact)
+            .environment(\.locale, Locale(identifier: "ru_RU"))
+
+            if let error = dobErrorMessage {
+                Text(error)
+                    .font(.footnote)
+                    .foregroundStyle(.red)
+            }
+        }
+    }
+
+    private func defaultDOB() -> Date {
+        // Default to 30 years ago so the picker opens on a sensible value
+        // when the user has not set a DOB yet.
+        Calendar.current.date(byAdding: .year, value: -30, to: Date()) ?? Date()
+    }
+
+    private func loadProfile() async {
+        isLoadingProfile = true
+        defer { isLoadingProfile = false }
+        do {
+            let profile = try await AuthService.shared.fetchProfile()
+            if let dob = profile.dateOfBirth, let parsed = Self.isoDateFormatter.date(from: dob) {
+                dateOfBirth = parsed
+            }
+        } catch {
+            // Silent: profile load failure should not block the rest of settings.
+            // User can still edit DOB; save will surface its own error.
+        }
+    }
+
+    private func scheduleDOBSave(_ newValue: Date) {
+        // Debounce: DatePicker emits set() on every spin; we only want to PATCH
+        // once the user settles on a value. 600ms is short enough to feel instant
+        // but long enough to coalesce normal scroll-through interactions.
+        pendingDOBSave?.cancel()
+        pendingDOBSave = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 600_000_000)
+            if Task.isCancelled { return }
+            await saveDOB(newValue)
+        }
+    }
+
+    private func saveDOB(_ date: Date) async {
+        let iso = Self.isoDateFormatter.string(from: date)
+        dobErrorMessage = nil
+        do {
+            _ = try await AuthService.shared.updateProfile(
+                timezone: TimeZone.current.identifier,
+                dateOfBirth: iso
+            )
+        } catch {
+            dobErrorMessage = "Не удалось сохранить дату рождения"
         }
     }
 

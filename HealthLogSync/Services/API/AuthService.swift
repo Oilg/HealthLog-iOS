@@ -21,7 +21,8 @@ final class AuthService {
         sex: String,
         email: String,
         phone: String,
-        password: String
+        password: String,
+        timezone: String = TimeZone.current.identifier
     ) async throws {
         let response: AuthResponse = try await APIClient.shared.request(
             path: "/api/v1/auth/register",
@@ -32,12 +33,34 @@ final class AuthService {
                 sex: sex,
                 email: email,
                 phone: phone,
-                password: password
+                password: password,
+                timezone: timezone
             ),
             requiresAuth: false
         )
         saveTokens(response)
         UserDefaultsManager.shared.userEmail = response.user.email
+    }
+
+    /// Updates the authenticated user's profile. Any nil field is omitted from the request body
+    /// so callers can update only `timezone`, only `dateOfBirth`, or both.
+    @discardableResult
+    func updateProfile(timezone: String? = nil, dateOfBirth: String? = nil) async throws -> UserProfileResponse {
+        try await APIClient.shared.request(
+            path: "/api/v1/users/me",
+            method: "PATCH",
+            body: UpdateProfileRequest(timezone: timezone, dateOfBirth: dateOfBirth),
+            requiresAuth: true
+        )
+    }
+
+    func fetchProfile() async throws -> UserProfileResponse {
+        try await APIClient.shared.request(
+            path: "/api/v1/users/me",
+            method: "GET",
+            body: nil as String?,
+            requiresAuth: true
+        )
     }
 
     func logout() async throws {
@@ -72,6 +95,10 @@ final class AuthService {
     func clearSession() {
         KeychainManager.shared.deleteAll()
         UserDefaultsManager.shared.clearUserData()
+        // Reset the DOB sync flag so the next account triggers a fresh upload.
+        Task { @MainActor in
+            ProfileSyncService.shared.resetSyncFlag()
+        }
     }
 
     var isLoggedIn: Bool {
