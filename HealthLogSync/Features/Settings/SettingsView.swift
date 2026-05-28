@@ -8,9 +8,13 @@ struct SettingsView: View {
     @State private var deleteError: String?
 
     @State private var dateOfBirth: Date?
+    /// `true` once the user has explicitly set a DOB or the server returned one.
+    /// While `false` we show a button instead of DatePicker to avoid the fake default date.
+    @State private var isDateSet: Bool = false
     @State private var isLoadingProfile = false
     @State private var dobErrorMessage: String?
     @State private var pendingDOBSave: Task<Void, Never>?
+    @State private var showDOBHighlightBanner = false
 
     private static let isoDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -115,6 +119,26 @@ struct SettingsView: View {
             }
         }
         .task { await loadProfile() }
+        .onDisappear { pendingDOBSave?.cancel() }
+        .onReceive(NotificationCenter.default.publisher(for: .highlightDOBField)) { _ in
+            showDOBHighlightBanner = true
+            Task {
+                try? await Task.sleep(nanoseconds: 3_000_000_000)
+                showDOBHighlightBanner = false
+            }
+        }
+        .overlay(alignment: .top) {
+            if showDOBHighlightBanner {
+                Text("Заполните дату рождения для точного анализа активности")
+                    .font(.footnote)
+                    .padding(10)
+                    .background(Color(.systemYellow).opacity(0.9))
+                    .cornerRadius(8)
+                    .padding(.top, 8)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .animation(.easeInOut, value: showDOBHighlightBanner)
+            }
+        }
     }
 
     @ViewBuilder
@@ -125,12 +149,13 @@ struct SettingsView: View {
                 Spacer()
                 ProgressView()
             }
-        } else {
+        } else if isDateSet {
             DatePicker(
                 "Дата рождения",
                 selection: Binding(
                     get: { dateOfBirth ?? defaultDOB() },
                     set: { newValue in
+                        isDateSet = true
                         dateOfBirth = newValue
                         scheduleDOBSave(newValue)
                     }
@@ -139,12 +164,35 @@ struct SettingsView: View {
                 displayedComponents: .date
             )
             .datePickerStyle(.compact)
-            .environment(\.locale, Locale(identifier: "ru_RU"))
+            .accessibilityHint("Сохраняется автоматически после изменения")
 
             if let error = dobErrorMessage {
-                Text(error)
-                    .font(.footnote)
-                    .foregroundStyle(.red)
+                HStack(spacing: 4) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.red)
+                    Text(error)
+                        .font(.footnote)
+                        .foregroundStyle(.red)
+                }
+                .accessibilityLabel("Ошибка: \(error)")
+            }
+        } else {
+            Button {
+                isDateSet = true
+                dateOfBirth = defaultDOB()
+            } label: {
+                Text("Указать дату рождения")
+            }
+
+            if let error = dobErrorMessage {
+                HStack(spacing: 4) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.red)
+                    Text(error)
+                        .font(.footnote)
+                        .foregroundStyle(.red)
+                }
+                .accessibilityLabel("Ошибка: \(error)")
             }
         }
     }
@@ -162,10 +210,12 @@ struct SettingsView: View {
             let profile = try await AuthService.shared.fetchProfile()
             if let dob = profile.dateOfBirth, let parsed = Self.isoDateFormatter.date(from: dob) {
                 dateOfBirth = parsed
+                isDateSet = true
+            } else {
+                isDateSet = false
             }
         } catch {
-            // Silent: profile load failure should not block the rest of settings.
-            // User can still edit DOB; save will surface its own error.
+            dobErrorMessage = "Не удалось загрузить профиль"
         }
     }
 

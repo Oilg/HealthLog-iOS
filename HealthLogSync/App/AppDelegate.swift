@@ -2,6 +2,10 @@ import UIKit
 import UserNotifications
 
 final class AppDelegate: NSObject, UIApplicationDelegate {
+    /// Stores a push action that arrived before MainTabView subscribed to NotificationCenter.
+    /// MainTabView reads and clears this in `.onAppear` / `.task` to handle cold-start navigations.
+    static var pendingAction: String?
+
     func application(
         _: UIApplication,
         didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?
@@ -166,6 +170,9 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         // (FCM-style payload). Check both locations so iOS-side handling is resilient
         // to how the push is composed server-side.
         if AppDelegate.extractAction(from: userInfo) == "open_profile" {
+            // Store as pending action to handle cold-start case where MainTabView
+            // is not yet subscribed to NotificationCenter when the delegate fires.
+            AppDelegate.pendingAction = "open_profile"
             NotificationCenter.default.post(name: .openProfile, object: nil)
         }
 
@@ -187,6 +194,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
 extension Notification.Name {
     static let analysisReady = Notification.Name("com.healthlogsync.analysisReady")
     static let openProfile = Notification.Name("com.healthlogsync.openProfile")
+    static let highlightDOBField = Notification.Name("com.healthlogsync.highlightDOBField")
 }
 
 /// Thread-safe wrapper for `UIBackgroundTaskIdentifier`.
