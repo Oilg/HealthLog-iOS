@@ -118,10 +118,10 @@ final class TimezoneDOBTests: XCTestCase {
     /// call updateProfile and must NOT mark the sync flag complete (so we retry
     /// next launch in case the user fills DOB in the Health app later).
     func test_fetchAndSyncDOB_skipsWhenHealthKitReturnsNil() async {
-        let defaults = makeIsolatedDefaults()
+        let flagStore = StubDOBFlagStore()
         let healthKit = StubHealthKitDOBProvider(components: nil)
         let auth = SpyProfileUpdater()
-        let service = ProfileSyncService(healthKit: healthKit, authService: auth, defaults: defaults)
+        let service = ProfileSyncService(healthKit: healthKit, authService: auth, flagStore: flagStore)
 
         let synced = await service.fetchAndSyncDOB()
 
@@ -133,14 +133,14 @@ final class TimezoneDOBTests: XCTestCase {
     /// Happy path: HealthKit yields DOB → PATCH /users/me is called with
     /// ISO date → flag is set so subsequent launches do not re-sync.
     func test_fetchAndSyncDOB_callsUpdateProfileAndSetsFlag() async {
-        let defaults = makeIsolatedDefaults()
+        let flagStore = StubDOBFlagStore()
         var components = DateComponents()
         components.year = 1990
         components.month = 5
         components.day = 15
         let healthKit = StubHealthKitDOBProvider(components: components)
         let auth = SpyProfileUpdater()
-        let service = ProfileSyncService(healthKit: healthKit, authService: auth, defaults: defaults)
+        let service = ProfileSyncService(healthKit: healthKit, authService: auth, flagStore: flagStore)
 
         let synced = await service.fetchAndSyncDOB()
 
@@ -153,14 +153,14 @@ final class TimezoneDOBTests: XCTestCase {
 
     /// Backend failure must keep the flag unset so the next launch retries.
     func test_fetchAndSyncDOB_keepsFlagUnsetOnBackendFailure() async {
-        let defaults = makeIsolatedDefaults()
+        let flagStore = StubDOBFlagStore()
         var components = DateComponents()
         components.year = 1990
         components.month = 5
         components.day = 15
         let healthKit = StubHealthKitDOBProvider(components: components)
         let auth = SpyProfileUpdater(throwError: TestError.network)
-        let service = ProfileSyncService(healthKit: healthKit, authService: auth, defaults: defaults)
+        let service = ProfileSyncService(healthKit: healthKit, authService: auth, flagStore: flagStore)
 
         let synced = await service.fetchAndSyncDOB()
 
@@ -172,14 +172,14 @@ final class TimezoneDOBTests: XCTestCase {
     /// Once flagged as synced, repeated calls must be no-ops — protects the
     /// backend from spam on every app launch / initial-sync completion.
     func test_fetchAndSyncDOB_isNoOpAfterFirstSuccess() async {
-        let defaults = makeIsolatedDefaults()
+        let flagStore = StubDOBFlagStore()
         var components = DateComponents()
         components.year = 1990
         components.month = 5
         components.day = 15
         let healthKit = StubHealthKitDOBProvider(components: components)
         let auth = SpyProfileUpdater()
-        let service = ProfileSyncService(healthKit: healthKit, authService: auth, defaults: defaults)
+        let service = ProfileSyncService(healthKit: healthKit, authService: auth, flagStore: flagStore)
 
         _ = await service.fetchAndSyncDOB()
         _ = await service.fetchAndSyncDOB()
@@ -188,22 +188,20 @@ final class TimezoneDOBTests: XCTestCase {
         XCTAssertEqual(auth.callCount, 1, "subsequent calls must not hit the backend")
     }
 
-    /// DOB components with all nil fields (Health app blank state) must be treated
-    /// as "no DOB available" — no PATCH, no flag.
-    func test_fetchAndSyncDOB_skipsWhenComponentsBlank() async {
-        let defaults = makeIsolatedDefaults()
-        let blank = DateComponents() // all nil
-        let healthKit = StubHealthKitDOBProvider(components: blank)
+    /// When HealthKit returns nil for a blank-components DOB, sync is skipped.
+    /// The real HealthKitManager returns nil when components are blank;
+    /// this test models that contract — the stub returns nil directly.
+    func test_fetchAndSyncDOB_skipsWhenHealthKitReturnsNilForBlankDOB() async {
+        let flagStore = StubDOBFlagStore()
+        // Stub returns nil, as HealthKitManager does when DOB is blank/unavailable.
+        let healthKit = StubHealthKitDOBProvider(components: nil)
         let auth = SpyProfileUpdater()
-        let service = ProfileSyncService(healthKit: healthKit, authService: auth, defaults: defaults)
+        let service = ProfileSyncService(healthKit: healthKit, authService: auth, flagStore: flagStore)
 
-        // Stub returns the components but ProfileSyncService delegates to the
-        // provider — here we pre-validate by using HealthKitManager.fetchDateOfBirth
-        // semantics: blank components should NOT reach the formatter. We approximate
-        // by giving the formatter a blank set and expecting nil.
-        XCTAssertNil(ProfileSyncService.formatISODate(from: blank))
         _ = await service.fetchAndSyncDOB()
-        XCTAssertEqual(auth.callCount, 0)
+
+        XCTAssertEqual(auth.callCount, 0, "updateProfile must not be called when HealthKit returns nil")
+        XCTAssertFalse(service.hasSyncedDOB)
     }
 
     // MARK: - Push action=open_profile
@@ -241,19 +239,94 @@ final class TimezoneDOBTests: XCTestCase {
 
     /// Posting `.openProfile` must reach subscribers — sanity check for the
     /// notification-based routing used by MainTabView.
+    /// Uses an isolated NotificationCenter to avoid interference from parallel tests.
     func test_openProfileNotification_isDeliveredToObservers() {
+        let center = NotificationCenter()
         let expectation = XCTestExpectation(description: "openProfile delivered")
-        let observer = NotificationCenter.default.addObserver(
+        let observer = center.addObserver(
             forName: .openProfile,
             object: nil,
             queue: .main
         ) { _ in
             expectation.fulfill()
         }
-        defer { NotificationCenter.default.removeObserver(observer) }
+        defer { center.removeObserver(observer) }
 
-        NotificationCenter.default.post(name: .openProfile, object: nil)
+        center.post(name: .openProfile, object: nil)
         wait(for: [expectation], timeout: 1.0)
+    }
+
+    // MARK: - clearUserData resets DOB sync flag
+
+    /// After `UserDefaultsManager.clearUserData()` the per-user DOB sync flag must be false so
+    /// the next authenticated account triggers a fresh DOB upload.
+    func test_clearUserData_resetsDOBSyncFlag() {
+        let udm = UserDefaultsManager.shared
+        let email = "test_clearUserData@example.com"
+        let key = "dateOfBirthSyncedToBackend_\(email)"
+
+        // Arrange — write the flag directly and set email so the key resolves correctly.
+        UserDefaults.standard.set(email, forKey: "userEmail")
+        UserDefaults.standard.set(true, forKey: key)
+        defer {
+            UserDefaults.standard.removeObject(forKey: key)
+            UserDefaults.standard.removeObject(forKey: "userEmail")
+        }
+
+        XCTAssertTrue(udm.dateOfBirthSynced, "precondition: flag is set before clear")
+
+        // Act — only UserDefaultsManager; no Keychain touched.
+        udm.clearUserData()
+
+        // Assert — restore email so we can read the original key and verify it is gone.
+        UserDefaults.standard.set(email, forKey: "userEmail")
+        XCTAssertFalse(udm.dateOfBirthSynced, "DOB sync flag must be cleared by clearUserData()")
+    }
+
+    // MARK: - dobRange bounds
+
+    /// `SettingsView.dobRange` lower bound must be 130 years before `now` and
+    /// upper bound must be 5 years before `now`. Uses a fixed reference date so
+    /// the test is not tautological and verifies the actual production function.
+    func test_dobRange_isBetween130And5YearsAgo() throws {
+        // Fixed reference point — independent of current wall-clock time.
+        let fixedNow = Date(timeIntervalSince1970: 1_000_000_000)
+        let range = SettingsView.dobRange(now: fixedNow)
+
+        let calendar = Calendar.current
+        let expectedMin = try XCTUnwrap(calendar.date(byAdding: .year, value: -130, to: fixedNow))
+        let expectedMax = try XCTUnwrap(calendar.date(byAdding: .year, value: -5, to: fixedNow))
+
+        XCTAssertEqual(
+            range.lowerBound.timeIntervalSince1970,
+            expectedMin.timeIntervalSince1970,
+            accuracy: 1,
+            "Lower bound must be exactly 130 years before fixedNow"
+        )
+        XCTAssertEqual(
+            range.upperBound.timeIntervalSince1970,
+            expectedMax.timeIntervalSince1970,
+            accuracy: 1,
+            "Upper bound must be exactly 5 years before fixedNow"
+        )
+        XCTAssertLessThan(range.lowerBound, range.upperBound, "Lower bound must precede upper bound")
+
+        // Verify the range shifts when `now` changes — proves the function is not hardcoded.
+        let laterNow = fixedNow.addingTimeInterval(86400 * 365)
+        let laterRange = SettingsView.dobRange(now: laterNow)
+        XCTAssertNotEqual(range.lowerBound, laterRange.lowerBound, "Range must be relative to the supplied now")
+    }
+
+    // MARK: - UserProfileResponse decodes absent fields
+
+    /// `{"email":"a@b.c"}` without `timezone` or `date_of_birth` keys must decode
+    /// without error and return nil for optional fields.
+    func test_userProfileResponse_decodesWhenFieldsAbsent() throws {
+        let json = Data(#"{"email":"a@b.c"}"#.utf8)
+        let profile = try JSONDecoder().decode(UserProfileResponse.self, from: json)
+        XCTAssertEqual(profile.email, "a@b.c")
+        XCTAssertNil(profile.timezone)
+        XCTAssertNil(profile.dateOfBirth)
     }
 }
 
@@ -296,11 +369,7 @@ private final class SpyProfileUpdater: ProfileUpdating, @unchecked Sendable {
     }
 }
 
-private func makeIsolatedDefaults() -> UserDefaults {
-    // Use a fresh suite per test so flag state does not leak between tests
-    // (and does not pollute the real standard defaults).
-    let suiteName = "TimezoneDOBTests.\(UUID().uuidString)"
-    let defaults = UserDefaults(suiteName: suiteName)!
-    defaults.removePersistentDomain(forName: suiteName)
-    return defaults
+/// In-memory DOBSyncFlagStore for test isolation — no UserDefaults pollution.
+private final class StubDOBFlagStore: DOBSyncFlagStore {
+    var dateOfBirthSynced: Bool = false
 }

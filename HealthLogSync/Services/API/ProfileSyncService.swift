@@ -17,24 +17,33 @@ final class ProfileSyncService {
     private let log = Logger(subsystem: "com.healthlogsync", category: "ProfileSync")
     private let healthKit: HealthKitDOBProvider
     private let authService: ProfileUpdating
-    private let defaults: UserDefaults
+    private let udManager: DOBSyncFlagStore
 
     /// Designated initializer with dependency injection points for unit tests.
     /// Production code uses the parameterless `shared` instance.
     init(
         healthKit: HealthKitDOBProvider = HealthKitManager.shared,
         authService: ProfileUpdating = AuthService.shared,
-        defaults: UserDefaults = .standard
+        defaults _: UserDefaults = .standard
     ) {
         self.healthKit = healthKit
         self.authService = authService
-        self.defaults = defaults
+        udManager = UserDefaultsManager.shared
     }
 
-    private static let dobSyncedKey = "dateOfBirthSyncedToBackend"
+    /// Designated initializer used by unit tests that need a custom `DOBSyncFlagStore`.
+    init(
+        healthKit: HealthKitDOBProvider,
+        authService: ProfileUpdating,
+        flagStore: DOBSyncFlagStore
+    ) {
+        self.healthKit = healthKit
+        self.authService = authService
+        udManager = flagStore
+    }
 
     var hasSyncedDOB: Bool {
-        defaults.bool(forKey: Self.dobSyncedKey)
+        udManager.dateOfBirthSynced
     }
 
     /// Reads DOB from HealthKit and pushes it to the backend if available.
@@ -53,7 +62,7 @@ final class ProfileSyncService {
         }
         do {
             _ = try await authService.updateProfile(timezone: nil, dateOfBirth: isoDate)
-            defaults.set(true, forKey: Self.dobSyncedKey)
+            udManager.dateOfBirthSynced = true
             log.info("DOB synced to backend successfully")
             return true
         } catch {
@@ -69,11 +78,6 @@ final class ProfileSyncService {
             return nil
         }
         return String(format: "%04d-%02d-%02d", year, month, day)
-    }
-
-    /// Clears the sync flag — call on logout so the next account triggers a fresh DOB sync.
-    func resetSyncFlag() {
-        defaults.removeObject(forKey: Self.dobSyncedKey)
     }
 }
 
@@ -91,3 +95,10 @@ protocol ProfileUpdating {
 }
 
 extension AuthService: ProfileUpdating {}
+
+/// Abstraction over the per-user DOB-synced flag so tests can inject an isolated store.
+protocol DOBSyncFlagStore: AnyObject {
+    var dateOfBirthSynced: Bool { get set }
+}
+
+extension UserDefaultsManager: DOBSyncFlagStore {}

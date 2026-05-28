@@ -94,11 +94,9 @@ final class AuthService {
 
     func clearSession() {
         KeychainManager.shared.deleteAll()
+        // clearUserData() synchronously removes the per-user DOB sync flag
+        // (keyed by email) so the next authenticated account triggers a fresh upload.
         UserDefaultsManager.shared.clearUserData()
-        // Reset the DOB sync flag so the next account triggers a fresh upload.
-        Task { @MainActor in
-            ProfileSyncService.shared.resetSyncFlag()
-        }
     }
 
     var isLoggedIn: Bool {

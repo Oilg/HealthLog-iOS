@@ -8,9 +8,13 @@ struct SettingsView: View {
     @State private var deleteError: String?
 
     @State private var dateOfBirth: Date?
+    /// `true` once the user has explicitly set a DOB or the server returned one.
+    /// While `false` we show a button instead of DatePicker to avoid the fake default date.
+    @State private var isDateSet: Bool = false
     @State private var isLoadingProfile = false
     @State private var dobErrorMessage: String?
     @State private var pendingDOBSave: Task<Void, Never>?
+    @State private var showDOBHighlightBanner = false
 
     private static let isoDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -21,9 +25,7 @@ struct SettingsView: View {
         return formatter
     }()
 
-    private var dobRange: ClosedRange<Date> {
-        let calendar = Calendar.current
-        let now = Date()
+    static func dobRange(now: Date = Date(), calendar: Calendar = .current) -> ClosedRange<Date> {
         let lower = calendar.date(byAdding: .year, value: -130, to: now) ?? now
         let upper = calendar.date(byAdding: .year, value: -5, to: now) ?? now
         return lower ... upper
@@ -114,7 +116,28 @@ struct SettingsView: View {
                 Text("Все ваши данные здоровья и история анализов будут удалены. Это действие нельзя отменить.")
             }
         }
-        .task { await loadProfile() }
+        .task {
+            await loadProfile()
+            if AppDelegate.pendingHighlightDOB {
+                AppDelegate.pendingHighlightDOB = false
+                showDOBHighlightBanner = true
+                try? await Task.sleep(nanoseconds: 3_000_000_000)
+                showDOBHighlightBanner = false
+            }
+        }
+        .onDisappear { pendingDOBSave?.cancel() }
+        .overlay(alignment: .top) {
+            if showDOBHighlightBanner {
+                Text("Заполните дату рождения для точного анализа активности")
+                    .font(.footnote)
+                    .padding(10)
+                    .background(Color(.systemYellow).opacity(0.9))
+                    .cornerRadius(8)
+                    .padding(.top, 8)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .animation(.easeInOut, value: showDOBHighlightBanner)
+            }
+        }
     }
 
     @ViewBuilder
@@ -125,26 +148,50 @@ struct SettingsView: View {
                 Spacer()
                 ProgressView()
             }
-        } else {
+        } else if isDateSet {
             DatePicker(
                 "Дата рождения",
                 selection: Binding(
                     get: { dateOfBirth ?? defaultDOB() },
                     set: { newValue in
+                        isDateSet = true
                         dateOfBirth = newValue
                         scheduleDOBSave(newValue)
                     }
                 ),
-                in: dobRange,
+                in: Self.dobRange(),
                 displayedComponents: .date
             )
             .datePickerStyle(.compact)
-            .environment(\.locale, Locale(identifier: "ru_RU"))
+            .accessibilityHint("Сохраняется автоматически после изменения")
 
             if let error = dobErrorMessage {
-                Text(error)
-                    .font(.footnote)
-                    .foregroundStyle(.red)
+                HStack(spacing: 4) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.red)
+                    Text(error)
+                        .font(.footnote)
+                        .foregroundStyle(.red)
+                }
+                .accessibilityLabel("Ошибка: \(error)")
+            }
+        } else {
+            Button {
+                isDateSet = true
+                dateOfBirth = defaultDOB()
+            } label: {
+                Text("Указать дату рождения")
+            }
+
+            if let error = dobErrorMessage {
+                HStack(spacing: 4) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.red)
+                    Text(error)
+                        .font(.footnote)
+                        .foregroundStyle(.red)
+                }
+                .accessibilityLabel("Ошибка: \(error)")
             }
         }
     }
@@ -162,10 +209,12 @@ struct SettingsView: View {
             let profile = try await AuthService.shared.fetchProfile()
             if let dob = profile.dateOfBirth, let parsed = Self.isoDateFormatter.date(from: dob) {
                 dateOfBirth = parsed
+                isDateSet = true
+            } else {
+                isDateSet = false
             }
         } catch {
-            // Silent: profile load failure should not block the rest of settings.
-            // User can still edit DOB; save will surface its own error.
+            dobErrorMessage = "Не удалось загрузить профиль"
         }
     }
 

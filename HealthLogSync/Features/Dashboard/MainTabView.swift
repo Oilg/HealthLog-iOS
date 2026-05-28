@@ -30,10 +30,25 @@ struct MainTabView: View {
                 }
                 .tag(Tab.settings.rawValue)
         }
+        .onAppear {
+            // Handle cold-start case: push arrived before MainTabView was alive and
+            // subscribed to NotificationCenter. AppDelegate stored the action in
+            // pendingAction; consume it here.
+            if AppDelegate.pendingAction == "open_profile" {
+                AppDelegate.pendingAction = nil
+                navigateToProfile()
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for: .openProfile)) { _ in
             // Push payload with action=open_profile asked us to navigate to the
             // profile/settings screen so the user can fill in DOB.
-            selectedTab = Tab.settings.rawValue
+            AppDelegate.pendingAction = nil
+            navigateToProfile()
         }
+    }
+
+    private func navigateToProfile() {
+        selectedTab = Tab.settings.rawValue
+        AppDelegate.pendingHighlightDOB = true
     }
 }

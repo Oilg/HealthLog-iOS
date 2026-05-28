@@ -97,6 +97,15 @@ final class SyncManager: ObservableObject {
         } catch {
             state = .failure(error)
         }
+
+        // For existing users whose initial sync was already completed before the
+        // DOB-sync feature landed, runInitialSync() never runs — so we ensure DOB
+        // is pushed on the first delta sync after login/launch. ProfileSyncService
+        // guards on hasSyncedDOB, so this is a no-op after the first success.
+        if succeeded {
+            await ProfileSyncService.shared.fetchAndSyncDOB()
+        }
+
         return succeeded
     }
 
