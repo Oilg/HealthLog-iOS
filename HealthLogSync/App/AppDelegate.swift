@@ -4,7 +4,12 @@ import UserNotifications
 final class AppDelegate: NSObject, UIApplicationDelegate {
     /// Stores a push action that arrived before MainTabView subscribed to NotificationCenter.
     /// MainTabView reads and clears this in `.onAppear` / `.task` to handle cold-start navigations.
-    static var pendingAction: String?
+    @MainActor static var pendingAction: String?
+
+    /// Set by `navigateToProfile()` when the DOB highlight banner must be shown after SettingsView
+    /// has fully appeared. SettingsView reads and clears this inside `.task` to avoid a race where
+    /// `.onReceive` fires before the view is subscribed.
+    @MainActor static var pendingHighlightDOB: Bool = false
 
     func application(
         _: UIApplication,
@@ -170,9 +175,12 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         // (FCM-style payload). Check both locations so iOS-side handling is resilient
         // to how the push is composed server-side.
         if AppDelegate.extractAction(from: userInfo) == "open_profile" {
-            // Store as pending action to handle cold-start case where MainTabView
+            // Store as pending action/highlight to handle cold-start case where MainTabView
             // is not yet subscribed to NotificationCenter when the delegate fires.
-            AppDelegate.pendingAction = "open_profile"
+            Task { @MainActor in
+                AppDelegate.pendingAction = "open_profile"
+                AppDelegate.pendingHighlightDOB = true
+            }
             NotificationCenter.default.post(name: .openProfile, object: nil)
         }
 

@@ -42,12 +42,13 @@ struct MainTabView: View {
         .onReceive(NotificationCenter.default.publisher(for: .openProfile)) { _ in
             // Push payload with action=open_profile asked us to navigate to the
             // profile/settings screen so the user can fill in DOB.
+            AppDelegate.pendingAction = nil
             navigateToProfile()
         }
     }
 
     private func navigateToProfile() {
         selectedTab = Tab.settings.rawValue
-        NotificationCenter.default.post(name: .highlightDOBField, object: nil)
+        AppDelegate.pendingHighlightDOB = true
     }
 }

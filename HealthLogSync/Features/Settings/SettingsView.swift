@@ -25,9 +25,7 @@ struct SettingsView: View {
         return formatter
     }()
 
-    private var dobRange: ClosedRange<Date> {
-        let calendar = Calendar.current
-        let now = Date()
+    static func dobRange(now: Date = Date(), calendar: Calendar = .current) -> ClosedRange<Date> {
         let lower = calendar.date(byAdding: .year, value: -130, to: now) ?? now
         let upper = calendar.date(byAdding: .year, value: -5, to: now) ?? now
         return lower ... upper
@@ -118,15 +116,16 @@ struct SettingsView: View {
                 Text("Все ваши данные здоровья и история анализов будут удалены. Это действие нельзя отменить.")
             }
         }
-        .task { await loadProfile() }
-        .onDisappear { pendingDOBSave?.cancel() }
-        .onReceive(NotificationCenter.default.publisher(for: .highlightDOBField)) { _ in
-            showDOBHighlightBanner = true
-            Task {
+        .task {
+            await loadProfile()
+            if AppDelegate.pendingHighlightDOB {
+                AppDelegate.pendingHighlightDOB = false
+                showDOBHighlightBanner = true
                 try? await Task.sleep(nanoseconds: 3_000_000_000)
                 showDOBHighlightBanner = false
             }
         }
+        .onDisappear { pendingDOBSave?.cancel() }
         .overlay(alignment: .top) {
             if showDOBHighlightBanner {
                 Text("Заполните дату рождения для точного анализа активности")
@@ -160,7 +159,7 @@ struct SettingsView: View {
                         scheduleDOBSave(newValue)
                     }
                 ),
-                in: dobRange,
+                in: Self.dobRange(),
                 displayedComponents: .date
             )
             .datePickerStyle(.compact)

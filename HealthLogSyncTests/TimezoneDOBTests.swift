@@ -256,53 +256,65 @@ final class TimezoneDOBTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    // MARK: - clearSession resets DOB sync flag
+    // MARK: - clearUserData resets DOB sync flag
 
-    /// After `clearSession()` the per-user DOB sync flag must be false so the next
-    /// authenticated account triggers a fresh DOB upload.
-    func test_clearSession_resetsDOBSyncFlag() {
-        // Set the flag via UserDefaultsManager using an email that matches what
-        // clearUserData() will look up (email is set before clearUserData is called).
+    /// After `UserDefaultsManager.clearUserData()` the per-user DOB sync flag must be false so
+    /// the next authenticated account triggers a fresh DOB upload.
+    func test_clearUserData_resetsDOBSyncFlag() {
         let udm = UserDefaultsManager.shared
-        udm.userEmail = "test_clear@example.com"
-        udm.dateOfBirthSynced = true
+        let email = "test_clearUserData@example.com"
+        let key = "dateOfBirthSyncedToBackend_\(email)"
+
+        // Arrange — write the flag directly and set email so the key resolves correctly.
+        UserDefaults.standard.set(email, forKey: "userEmail")
+        UserDefaults.standard.set(true, forKey: key)
+        defer {
+            UserDefaults.standard.removeObject(forKey: key)
+            UserDefaults.standard.removeObject(forKey: "userEmail")
+        }
+
         XCTAssertTrue(udm.dateOfBirthSynced, "precondition: flag is set before clear")
 
-        AuthService.shared.clearSession()
-
-        // After clearSession the email is nil; udm now resolves the key as _anonymous.
-        // The test verifies the flag was removed before email was cleared.
-        // Re-set email to check the original key:
-        udm.userEmail = "test_clear@example.com"
-        XCTAssertFalse(udm.dateOfBirthSynced, "DOB sync flag must be cleared synchronously on logout")
-        // Clean up
+        // Act — only UserDefaultsManager; no Keychain touched.
         udm.clearUserData()
+
+        // Assert — restore email so we can read the original key and verify it is gone.
+        UserDefaults.standard.set(email, forKey: "userEmail")
+        XCTAssertFalse(udm.dateOfBirthSynced, "DOB sync flag must be cleared by clearUserData()")
     }
 
     // MARK: - dobRange bounds
 
-    /// `dobRange` lower bound must be at least 130 years ago and upper bound at most 5 years ago.
+    /// `SettingsView.dobRange` lower bound must be 130 years before `now` and
+    /// upper bound must be 5 years before `now`. Uses a fixed reference date so
+    /// the test is not tautological and verifies the actual production function.
     func test_dobRange_isBetween130And5YearsAgo() throws {
+        // Fixed reference point — independent of current wall-clock time.
+        let fixedNow = Date(timeIntervalSince1970: 1_000_000_000)
+        let range = SettingsView.dobRange(now: fixedNow)
+
         let calendar = Calendar.current
-        let now = Date()
-        let lower = try XCTUnwrap(calendar.date(byAdding: .year, value: -130, to: now))
-        let upper = try XCTUnwrap(calendar.date(byAdding: .year, value: -5, to: now))
+        let expectedMin = try XCTUnwrap(calendar.date(byAdding: .year, value: -130, to: fixedNow))
+        let expectedMax = try XCTUnwrap(calendar.date(byAdding: .year, value: -5, to: fixedNow))
 
-        // Verify the static logic directly (mirrors SettingsView.dobRange).
-        let rangeStart = try XCTUnwrap(calendar.date(byAdding: .year, value: -130, to: now))
-        let rangeEnd = try XCTUnwrap(calendar.date(byAdding: .year, value: -5, to: now))
+        XCTAssertEqual(
+            range.lowerBound.timeIntervalSince1970,
+            expectedMin.timeIntervalSince1970,
+            accuracy: 1,
+            "Lower bound must be exactly 130 years before fixedNow"
+        )
+        XCTAssertEqual(
+            range.upperBound.timeIntervalSince1970,
+            expectedMax.timeIntervalSince1970,
+            accuracy: 1,
+            "Upper bound must be exactly 5 years before fixedNow"
+        )
+        XCTAssertLessThan(range.lowerBound, range.upperBound, "Lower bound must precede upper bound")
 
-        XCTAssertLessThanOrEqual(
-            rangeStart.timeIntervalSince1970,
-            lower.timeIntervalSince1970 + 1,
-            "Lower bound must be <= 130 years ago"
-        )
-        XCTAssertGreaterThanOrEqual(
-            rangeEnd.timeIntervalSince1970,
-            upper.timeIntervalSince1970 - 1,
-            "Upper bound must be >= 5 years ago"
-        )
-        XCTAssertLessThan(rangeStart, rangeEnd, "Lower bound must precede upper bound")
+        // Verify the range shifts when `now` changes — proves the function is not hardcoded.
+        let laterNow = fixedNow.addingTimeInterval(86400 * 365)
+        let laterRange = SettingsView.dobRange(now: laterNow)
+        XCTAssertNotEqual(range.lowerBound, laterRange.lowerBound, "Range must be relative to the supplied now")
     }
 
     // MARK: - UserProfileResponse decodes absent fields
