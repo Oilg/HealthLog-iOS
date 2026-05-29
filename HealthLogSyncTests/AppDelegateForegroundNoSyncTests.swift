@@ -128,5 +128,4 @@ final class AppDelegateForegroundNoSyncTests: XCTestCase {
             "Becoming active must not set isSyncing."
         )
     }
-
 }
