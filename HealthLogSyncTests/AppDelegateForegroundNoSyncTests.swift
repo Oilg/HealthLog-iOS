@@ -105,4 +105,27 @@ final class AppDelegateForegroundNoSyncTests: XCTestCase {
         XCTAssertEqual(manager.state, .idle)
         XCTAssertFalse(manager.isSyncing)
     }
+
+    /// `applicationDidBecomeActive` must not start a sync.
+    /// Note: the badge-clearing side-effect (`setBadgeCount(0)`) cannot be
+    /// verified here without injecting a mock `UNUserNotificationCenter`.
+    func test_applicationDidBecomeActive_doesNotStartSync() {
+        let delegate = AppDelegate()
+        let manager = SyncManager.shared
+
+        XCTAssertEqual(manager.state, .idle, "precondition")
+        XCTAssertFalse(manager.isSyncing, "precondition")
+
+        delegate.applicationDidBecomeActive(UIApplication.shared)
+
+        XCTAssertEqual(
+            manager.state,
+            .idle,
+            "Becoming active must not advance SyncManager state."
+        )
+        XCTAssertFalse(
+            manager.isSyncing,
+            "Becoming active must not set isSyncing."
+        )
+    }
 }

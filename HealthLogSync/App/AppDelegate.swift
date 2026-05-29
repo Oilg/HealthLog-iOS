@@ -26,6 +26,10 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         BackgroundTaskManager.shared.scheduleDailySync()
     }
 
+    func applicationDidBecomeActive(_: UIApplication) {
+        UNUserNotificationCenter.current().setBadgeCount(0)
+    }
+
     private func requestNotificationPermission() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
             guard granted else { return }
@@ -156,7 +160,10 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         if type == "analysis_ready" {
             NotificationCenter.default.post(name: .analysisReady, object: nil)
         }
-        completionHandler([.banner, .sound, .badge])
+        // Omit .badge: the app is already in the foreground so applicationDidBecomeActive
+        // won't fire again, which means a badge set here would not be cleared until the
+        // next foreground transition.
+        completionHandler([.banner, .sound])
     }
 
     /// Handle tap on a delivered notification.
