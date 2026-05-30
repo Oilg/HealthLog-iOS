@@ -23,7 +23,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     }
 
     func applicationWillEnterForeground(_: UIApplication) {
-        BackgroundTaskManager.shared.scheduleDailySync()
+        BackgroundTaskManager.shared.scheduleDailySyncIfNeeded()
     }
 
     func applicationDidBecomeActive(_: UIApplication) {
