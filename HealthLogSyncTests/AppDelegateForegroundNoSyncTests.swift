@@ -106,6 +106,36 @@ final class AppDelegateForegroundNoSyncTests: XCTestCase {
         XCTAssertFalse(manager.isSyncing)
     }
 
+    /// `applicationWillEnterForeground` must not cancel an already-scheduled
+    /// BGProcessingTask. Before the fix, calling `scheduleDailySync()` from
+    /// `applicationWillEnterForeground` would call
+    /// `BGTaskScheduler.cancel(taskRequestWithIdentifier:)` and then submit a new
+    /// request for the *next* 10:00 — if the user opened the app after 10:00 the
+    /// already-queued daily sync was discarded and rescheduled for tomorrow.
+    ///
+    /// `scheduleDailySyncIfNeeded()` reads the `dailySyncScheduled` UserDefaults
+    /// flag and returns early without touching BGTaskScheduler when a request is
+    /// already pending. This test verifies that the flag is preserved (stays `true`)
+    /// across a foreground transition so the existing request is not replaced.
+    func test_applicationWillEnterForeground_preservesAlreadyScheduledBGTask() {
+        let scheduledKey = "com.healthlogsync.dailySyncScheduled"
+        let previousValue = UserDefaults.standard.bool(forKey: scheduledKey)
+        defer { UserDefaults.standard.set(previousValue, forKey: scheduledKey) }
+
+        // Simulate a BGProcessingTask already being scheduled (flag set by BackgroundTaskManager
+        // after a successful BGTaskScheduler.submit() call).
+        UserDefaults.standard.set(true, forKey: scheduledKey)
+
+        let delegate = AppDelegate()
+        delegate.applicationWillEnterForeground(UIApplication.shared)
+
+        XCTAssertTrue(
+            UserDefaults.standard.bool(forKey: scheduledKey),
+            "applicationWillEnterForeground must not clear the dailySyncScheduled flag — " +
+            "doing so would cause scheduleDailySync() to cancel and replace the pending BGProcessingTask."
+        )
+    }
+
     /// `applicationDidBecomeActive` must not start a sync.
     /// Note: the badge-clearing side-effect (`setBadgeCount(0)`) cannot be
     /// verified here without injecting a mock `UNUserNotificationCenter`.
