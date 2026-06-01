@@ -132,7 +132,7 @@ final class AppDelegateForegroundNoSyncTests: XCTestCase {
         XCTAssertTrue(
             UserDefaults.standard.bool(forKey: scheduledKey),
             "applicationWillEnterForeground must not clear the dailySyncScheduled flag — " +
-            "doing so would cause scheduleDailySync() to cancel and replace the pending BGProcessingTask."
+                "doing so would cause scheduleDailySync() to cancel and replace the pending BGProcessingTask."
         )
     }
 
