@@ -18,8 +18,7 @@ struct RiskDetailView: View {
             }
             .padding()
         }
-        .navigationTitle(risk.localizedName)
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
     }
 
     // MARK: - Header
