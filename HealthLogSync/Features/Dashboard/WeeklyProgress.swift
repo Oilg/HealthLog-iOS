@@ -169,14 +169,9 @@ struct WeeklyProgressRow: View {
 
             Spacer()
 
-            VStack(alignment: .trailing, spacing: 2) {
-                Text(item.deltaText)
-                    .font(.subheadline.bold())
-                    .foregroundStyle(item.directionColor)
-                Text(item.directionTitle)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
+            Text(item.directionTitle)
+                .font(.subheadline.bold())
+                .foregroundStyle(item.directionColor)
         }
         .padding(.vertical, 4)
         .accessibilityElement(children: .combine)
