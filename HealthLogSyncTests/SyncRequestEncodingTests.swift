@@ -2,10 +2,7 @@ import XCTest
 @testable import HealthLogSync
 
 final class SyncRequestEncodingTests: XCTestCase {
-    private let encoder: JSONEncoder = {
-        let enc = JSONEncoder()
-        return enc
-    }()
+    private let encoder: JSONEncoder = .init()
 
     func test_syncRequest_encodesAppVersion() throws {
         let request = SyncRequest(
