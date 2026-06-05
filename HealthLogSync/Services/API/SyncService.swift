@@ -15,7 +15,8 @@ final class SyncService {
             syncFrom: formatter.string(from: from),
             syncTo: formatter.string(from: to),
             records: records,
-            appVersion: appVersion
+            appVersion: appVersion,
+            platform: "iOS"
         )
         let response: SyncResponse = try await APIClient.shared.request(
             path: "/api/v1/sync",

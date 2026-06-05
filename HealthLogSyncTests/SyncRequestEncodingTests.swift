@@ -9,7 +9,8 @@ final class SyncRequestEncodingTests: XCTestCase {
             syncFrom: "2024-01-01T00:00:00Z",
             syncTo: "2024-01-02T00:00:00Z",
             records: [],
-            appVersion: "2.3.1"
+            appVersion: "2.3.1",
+            platform: nil
         )
         let data = try encoder.encode(request)
         let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
@@ -21,7 +22,8 @@ final class SyncRequestEncodingTests: XCTestCase {
             syncFrom: "2024-01-01T00:00:00Z",
             syncTo: "2024-01-02T00:00:00Z",
             records: [],
-            appVersion: nil
+            appVersion: nil,
+            platform: nil
         )
         let data = try encoder.encode(request)
         let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
@@ -36,11 +38,25 @@ final class SyncRequestEncodingTests: XCTestCase {
             syncFrom: "2024-01-01T00:00:00Z",
             syncTo: "2024-01-02T00:00:00Z",
             records: [],
-            appVersion: nil
+            appVersion: nil,
+            platform: nil
         )
         let data = try encoder.encode(request)
         let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
         XCTAssertEqual(json?["sync_from"] as? String, "2024-01-01T00:00:00Z")
         XCTAssertEqual(json?["sync_to"] as? String, "2024-01-02T00:00:00Z")
+    }
+
+    func test_syncRequest_encodesPlatformiOS() throws {
+        let request = SyncRequest(
+            syncFrom: "2024-01-01T00:00:00Z",
+            syncTo: "2024-01-02T00:00:00Z",
+            records: [],
+            appVersion: nil,
+            platform: "iOS"
+        )
+        let data = try encoder.encode(request)
+        let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        XCTAssertEqual(json?["platform"] as? String, "iOS")
     }
 }
