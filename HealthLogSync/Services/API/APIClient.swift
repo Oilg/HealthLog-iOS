@@ -1,3 +1,4 @@
+import CommonCrypto
 import Foundation
 
 enum APIClientError: Error, LocalizedError {
@@ -16,10 +17,74 @@ enum APIClientError: Error, LocalizedError {
     }
 }
 
+// MARK: - Certificate Pinning Delegate
+
+private final class CertificatePinningDelegate: NSObject, URLSessionDelegate {
+    // SHA-256 fingerprint of the server's public key (DER-encoded SubjectPublicKeyInfo)
+    // Generated with:
+    //   openssl s_client -connect 5.129.199.50:443 </dev/null 2>/dev/null \
+    //   | openssl x509 -pubkey -noout \
+    //   | openssl pkey -pubin -outform DER \
+    //   | openssl dgst -sha256 -binary | base64
+    static let pinnedPublicKeyHash = "sI9OZ7s7iBAEAmi6LJGfkjXE6Zt88nSlKTjsXl3qg4k="
+
+    func urlSession(
+        _ session: URLSession,
+        didReceive challenge: URLAuthenticationChallenge,
+        completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+    ) {
+        guard challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
+              let serverTrust = challenge.protectionSpace.serverTrust
+        else {
+            completionHandler(.cancelAuthenticationChallenge, nil)
+            return
+        }
+
+        // Extract the leaf certificate's public key and compare its SHA-256 hash
+        guard let certChain = SecTrustCopyCertificateChain(serverTrust) as? [SecCertificate],
+              let leafCertificate = certChain.first
+        else {
+            completionHandler(.cancelAuthenticationChallenge, nil)
+            return
+        }
+
+        guard let publicKey = SecCertificateCopyKey(leafCertificate),
+              let publicKeyData = SecKeyCopyExternalRepresentation(publicKey, nil) as Data?
+        else {
+            completionHandler(.cancelAuthenticationChallenge, nil)
+            return
+        }
+
+        // ASN.1 header for RSA-2048 public key (SubjectPublicKeyInfo wrapper)
+        let rsa2048Header: [UInt8] = [
+            0x30, 0x82, 0x01, 0x22, 0x30, 0x0d, 0x06, 0x09,
+            0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01,
+            0x01, 0x05, 0x00, 0x03, 0x82, 0x01, 0x0f, 0x00
+        ]
+
+        var dataToHash = Data(rsa2048Header)
+        dataToHash.append(publicKeyData)
+
+        var hash = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
+        dataToHash.withUnsafeBytes { ptr in
+            _ = CC_SHA256(ptr.baseAddress, CC_LONG(dataToHash.count), &hash)
+        }
+        let computedHash = Data(hash).base64EncodedString()
+
+        if computedHash == CertificatePinningDelegate.pinnedPublicKeyHash {
+            completionHandler(.useCredential, URLCredential(trust: serverTrust))
+        } else {
+            completionHandler(.cancelAuthenticationChallenge, nil)
+        }
+    }
+}
+
+// MARK: - APIClient
+
 final class APIClient {
     static let shared = APIClient()
 
-    private let baseURL: String = "http://5.129.199.50"
+    private let baseURL: String = "https://5.129.199.50"
     private let session: URLSession
     private let decoder: JSONDecoder
     private let encoder: JSONEncoder
@@ -28,7 +93,8 @@ final class APIClient {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 60
         config.timeoutIntervalForResource = 300
-        session = URLSession(configuration: config)
+        let delegate = CertificatePinningDelegate()
+        session = URLSession(configuration: config, delegate: delegate, delegateQueue: nil)
         decoder = JSONDecoder()
         encoder = JSONEncoder()
     }
