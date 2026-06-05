@@ -88,12 +88,14 @@ struct SyncRequest: Encodable {
     let syncTo: String
     let records: [HealthRecord]
     let appVersion: String?
+    let platform: String?
 
     enum CodingKeys: String, CodingKey {
         case syncFrom = "sync_from"
         case syncTo = "sync_to"
         case records
         case appVersion = "app_version"
+        case platform
     }
 }
 
