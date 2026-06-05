@@ -20,16 +20,16 @@ enum APIClientError: Error, LocalizedError {
 // MARK: - Certificate Pinning Delegate
 
 private final class CertificatePinningDelegate: NSObject, URLSessionDelegate {
-    // SHA-256 fingerprint of the server's public key (DER-encoded SubjectPublicKeyInfo)
-    // Generated with:
-    //   openssl s_client -connect 5.129.199.50:443 </dev/null 2>/dev/null \
-    //   | openssl x509 -pubkey -noout \
-    //   | openssl pkey -pubin -outform DER \
-    //   | openssl dgst -sha256 -binary | base64
+    /// SHA-256 fingerprint of the server's public key (DER-encoded SubjectPublicKeyInfo)
+    /// Generated with:
+    ///   openssl s_client -connect 5.129.199.50:443 </dev/null 2>/dev/null \
+    ///   | openssl x509 -pubkey -noout \
+    ///   | openssl pkey -pubin -outform DER \
+    ///   | openssl dgst -sha256 -binary | base64
     static let pinnedPublicKeyHash = "sI9OZ7s7iBAEAmi6LJGfkjXE6Zt88nSlKTjsXl3qg4k="
 
     func urlSession(
-        _ session: URLSession,
+        _: URLSession,
         didReceive challenge: URLAuthenticationChallenge,
         completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
     ) {
@@ -57,9 +57,9 @@ private final class CertificatePinningDelegate: NSObject, URLSessionDelegate {
 
         // ASN.1 header for RSA-2048 public key (SubjectPublicKeyInfo wrapper)
         let rsa2048Header: [UInt8] = [
-            0x30, 0x82, 0x01, 0x22, 0x30, 0x0d, 0x06, 0x09,
-            0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01,
-            0x01, 0x05, 0x00, 0x03, 0x82, 0x01, 0x0f, 0x00
+            0x30, 0x82, 0x01, 0x22, 0x30, 0x0D, 0x06, 0x09,
+            0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01,
+            0x01, 0x05, 0x00, 0x03, 0x82, 0x01, 0x0F, 0x00,
         ]
 
         var dataToHash = Data(rsa2048Header)
