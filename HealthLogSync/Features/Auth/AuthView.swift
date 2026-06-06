@@ -74,6 +74,12 @@ struct AuthView: View {
                         }
                     }
                     .padding(.horizontal, 32)
+                    .task {
+                        guard !viewModel.didAttemptBiometricAutoTrigger, viewModel.isBiometricAvailable else { return }
+                        viewModel.didAttemptBiometricAutoTrigger = true
+                        let success = await viewModel.loginWithBiometrics()
+                        if success { finishLogin() }
+                    }
 
                     Button {
                         viewModel.toggleMode()
@@ -85,14 +91,6 @@ struct AuthView: View {
                     .padding(.top, 16)
                     .padding(.bottom, 32)
                 }
-            }
-        }
-        .onAppear {
-            guard !viewModel.didAttemptBiometricAutoTrigger, viewModel.isBiometricAvailable else { return }
-            viewModel.didAttemptBiometricAutoTrigger = true
-            Task {
-                let success = await viewModel.loginWithBiometrics()
-                if success { finishLogin() }
             }
         }
         .alert("Сохранить для Face ID?", isPresented: $viewModel.showSaveCredentialsAlert) {
