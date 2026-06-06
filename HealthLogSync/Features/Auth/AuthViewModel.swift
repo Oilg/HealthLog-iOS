@@ -20,7 +20,7 @@ final class AuthViewModel: ObservableObject {
     /// Tracks whether the auto-trigger on appear has already fired.
     /// Stored on the ViewModel (a @StateObject) rather than as @State so it
     /// survives SwiftUI view-struct recreation caused by AppState republishing.
-    private(set) var didAttemptBiometricAutoTrigger = false
+    var didAttemptBiometricAutoTrigger = false
 
     var isBiometricAvailable: Bool {
         BiometricAuthManager.shared.isAvailable
