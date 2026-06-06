@@ -89,7 +89,8 @@ final class DashboardViewModel: ObservableObject {
                 guard !Task.isCancelled else { return }
                 if let report = try? await AnalysisService.shared.fetchLatest(),
                    let reportDate = parseISO8601(report.analyzedAt),
-                   reportDate > syncStartedAt {
+                   reportDate > syncStartedAt
+                {
                     await MainActor.run {
                         self.latestReport = report
                         self.analysisInProgress = false
@@ -109,7 +110,7 @@ final class DashboardViewModel: ObservableObject {
         }
     }
 
-    nonisolated private func parseISO8601(_ string: String) -> Date? {
+    private nonisolated func parseISO8601(_ string: String) -> Date? {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         if let date = formatter.date(from: string) { return date }
