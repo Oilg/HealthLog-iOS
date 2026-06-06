@@ -16,6 +16,10 @@ enum APIClientError: Error, LocalizedError {
     }
 }
 
+extension Notification.Name {
+    static let sessionDidExpire = Notification.Name("com.healthlogsync.sessionDidExpire")
+}
+
 // MARK: - Certificate Pinning Delegate
 
 private final class CertificatePinningDelegate: NSObject, URLSessionDelegate {
@@ -109,6 +113,7 @@ final class APIClient {
                 if refreshed {
                     return try await self.request(path: path, method: method, body: body, requiresAuth: requiresAuth)
                 }
+                NotificationCenter.default.post(name: .sessionDidExpire, object: nil)
                 throw APIClientError.unauthorized
             }
 
