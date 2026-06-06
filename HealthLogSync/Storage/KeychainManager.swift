@@ -123,6 +123,6 @@ final class KeychainManager {
 
     /// Returns true without triggering a biometric prompt.
     var hasBiometricCredentials: Bool {
-        get(.biometricCredentialsSaved) != nil
+        return self.get(.biometricCredentialsSaved) != nil
     }
 }
