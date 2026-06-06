@@ -2,7 +2,6 @@ import XCTest
 @testable import HealthLogSync
 
 final class BiometricCredentialTests: XCTestCase {
-
     private let keychain = KeychainManager.shared
 
     override func setUp() {

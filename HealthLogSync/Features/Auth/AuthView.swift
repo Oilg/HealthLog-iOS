@@ -49,7 +49,7 @@ struct AuthView: View {
                                 // For login, onLoginSuccess is triggered by the
                                 // save-credentials alert (either button). For
                                 // registration there is no alert, so call directly.
-                                if success && viewModel.isRegistering {
+                                if success, viewModel.isRegistering {
                                     appState.onLoginSuccess()
                                 }
                             }
@@ -69,7 +69,7 @@ struct AuthView: View {
                         .buttonStyle(.borderedProminent)
                         .disabled(viewModel.isSubmitDisabled)
 
-                        if !viewModel.isRegistering && viewModel.isBiometricAvailable {
+                        if !viewModel.isRegistering, viewModel.isBiometricAvailable {
                             biometricButton
                         }
                     }
