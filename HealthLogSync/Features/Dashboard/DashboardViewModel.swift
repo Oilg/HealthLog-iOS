@@ -109,7 +109,6 @@ final class DashboardViewModel: ObservableObject {
                 self.weeklyProgressTask?.cancel()
                 self.weeklyProgressTask = Task { await self.loadWeeklyProgress() }
             case .timedOut:
-                guard !Task.isCancelled else { return }
                 self.analysisInProgress = false
                 self.analysisTimedOut = true
                 self.analysisPollingTask = nil

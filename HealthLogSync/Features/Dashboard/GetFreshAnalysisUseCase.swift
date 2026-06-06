@@ -39,7 +39,7 @@ final class GetFreshAnalysisUseCase {
         // Начальная пауза — бэкенд ещё только обрабатывает данные
         do {
             try await Task.sleep(for: .seconds(initialDelay))
-        } catch {
+        } catch is CancellationError {
             return .cancelled
         }
         guard !Task.isCancelled else { return .cancelled }
@@ -58,7 +58,7 @@ final class GetFreshAnalysisUseCase {
 
             do {
                 try await Task.sleep(for: .seconds(pollingInterval))
-            } catch {
+            } catch is CancellationError {
                 return .cancelled
             }
             guard !Task.isCancelled else { return .cancelled }
