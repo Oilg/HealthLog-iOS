@@ -46,6 +46,7 @@ final class AppState: ObservableObject {
         }
     }
 
+    @MainActor
     private func checkSyncStatusAndSkipOnboardingIfNeeded() async {
         do {
             let status = try await SyncService.shared.fetchSyncStatus()
