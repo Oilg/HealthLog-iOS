@@ -5,12 +5,21 @@ import XCTest
 
 final class FakeClock: Clock {
     var currentDate: Date
+    /// Если задан — автоматически продвигает время на этот интервал при каждом вызове `now()`.
+    /// Полезно чтобы `while clock.now() < deadline` завершилось в тестах без реального sleep.
+    var autoAdvanceInterval: TimeInterval
 
-    init(date: Date = Date(timeIntervalSince1970: 1_000_000)) {
+    init(date: Date = Date(timeIntervalSince1970: 1_000_000), autoAdvanceInterval: TimeInterval = 0) {
         currentDate = date
+        self.autoAdvanceInterval = autoAdvanceInterval
     }
 
-    func now() -> Date { currentDate }
+    func now() -> Date {
+        if autoAdvanceInterval > 0 {
+            currentDate = currentDate.addingTimeInterval(autoAdvanceInterval)
+        }
+        return currentDate
+    }
 
     func advance(by interval: TimeInterval) {
         currentDate = currentDate.addingTimeInterval(interval)
@@ -86,6 +95,28 @@ final class GetFreshAnalysisUseCaseTests: XCTestCase {
             clock: clock,
             initialDelay: 0,
             pollingDuration: 0,
+            pollingInterval: 0
+        )
+        let result = await useCase.execute(syncStartedAt: syncStart)
+
+        XCTAssertEqual(result, .timedOut)
+    }
+
+    func test_execute_returnsTimedOut_withAutoAdvancingClock() async {
+        // FakeClock с autoAdvanceInterval гарантирует завершение цикла
+        // даже при pollingDuration > 0, без риска бесконечного цикла.
+        let clock = FakeClock(autoAdvanceInterval: 30) // каждый вызов now() +30 сек
+        let syncStart = clock.now().addingTimeInterval(-1)
+
+        let oldReport = makeReport(analyzedAt: clock.now().addingTimeInterval(-3600))
+        let service = FakeAnalysisService()
+        service.stubbedReport = oldReport
+
+        let useCase = GetFreshAnalysisUseCase(
+            analysisService: service,
+            clock: clock,
+            initialDelay: 0,
+            pollingDuration: 60, // без autoAdvance — цикл мог бы зависнуть
             pollingInterval: 0
         )
         let result = await useCase.execute(syncStartedAt: syncStart)

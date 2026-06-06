@@ -49,8 +49,10 @@ final class DashboardViewModel: ObservableObject {
     }
 
     func refresh() async {
-        analysisPollingTask?.cancel()
+        let previousTask = analysisPollingTask
         analysisPollingTask = nil
+        previousTask?.cancel()
+        await previousTask?.value
         analysisInProgress = false
         analysisTimedOut = false
         await loadLatestReport()
@@ -95,7 +97,7 @@ final class DashboardViewModel: ObservableObject {
         // Отменяем предыдущий polling если он ещё идёт
         analysisPollingTask?.cancel()
 
-        analysisPollingTask = Task {
+        analysisPollingTask = Task { @MainActor in
             let result = await getFreshAnalysisUseCase.execute(syncStartedAt: syncStartedAt)
             guard !Task.isCancelled else { return }
 
@@ -107,6 +109,7 @@ final class DashboardViewModel: ObservableObject {
                 self.weeklyProgressTask?.cancel()
                 self.weeklyProgressTask = Task { await self.loadWeeklyProgress() }
             case .timedOut:
+                guard !Task.isCancelled else { return }
                 self.analysisInProgress = false
                 self.analysisTimedOut = true
                 self.analysisPollingTask = nil
