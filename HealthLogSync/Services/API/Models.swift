@@ -209,6 +209,18 @@ struct DeviceTokenRequest: Encodable {
     }
 }
 
+// MARK: - Sync Status
+
+struct SyncStatusResponse: Decodable {
+    let hasData: Bool
+    let lastSyncAt: String?
+
+    enum CodingKeys: String, CodingKey {
+        case hasData = "has_data"
+        case lastSyncAt = "last_sync_at"
+    }
+}
+
 // MARK: - Errors
 
 struct APIError: Decodable, Error {
