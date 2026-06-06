@@ -5,6 +5,8 @@ final class BiometricAuthManager {
     static let shared = BiometricAuthManager()
     private init() {}
 
+    private var isAuthenticating = false
+
     /// Whether the device supports biometric authentication (Face ID or Touch ID).
     var isAvailable: Bool {
         let context = LAContext()
@@ -24,6 +26,9 @@ final class BiometricAuthManager {
 
     /// Asks the user to authenticate. Returns `true` on success, `false` on any failure/cancel.
     func authenticate(reason: String) async -> Bool {
+        guard !isAuthenticating else { return false }
+        isAuthenticating = true
+        defer { isAuthenticating = false }
         let context = LAContext()
         var error: NSError?
         guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
