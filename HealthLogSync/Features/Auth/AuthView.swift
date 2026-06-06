@@ -5,8 +5,6 @@ struct AuthView: View {
     @StateObject private var viewModel = AuthViewModel()
     /// Set to true once onLoginSuccess has been called to avoid double-invocation.
     @State private var didFinishLogin = false
-    /// Prevents re-triggering biometric auth every time the view re-appears (e.g. from background).
-    @State private var didAttemptBiometricOnAppear = false
 
     var body: some View {
         NavigationStack {
@@ -90,8 +88,8 @@ struct AuthView: View {
             }
         }
         .onAppear {
-            guard !didAttemptBiometricOnAppear, viewModel.isBiometricAvailable else { return }
-            didAttemptBiometricOnAppear = true
+            guard !viewModel.didAttemptBiometricAutoTrigger, viewModel.isBiometricAvailable else { return }
+            viewModel.didAttemptBiometricAutoTrigger = true
             Task {
                 let success = await viewModel.loginWithBiometrics()
                 if success { finishLogin() }
