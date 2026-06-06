@@ -109,7 +109,7 @@ struct AuthView: View {
         // Guard against system-dismiss (e.g. programmatic binding reset) leaving the
         // user stuck on the login screen with a valid session.
         .onChange(of: viewModel.showSaveCredentialsAlert) { wasShowing, isShowing in
-            if wasShowing && !isShowing { finishLogin() }
+            if wasShowing, !isShowing { finishLogin() }
         }
     }
 
