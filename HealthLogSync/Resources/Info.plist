@@ -66,8 +66,6 @@
 				<string>TLSv1.2</string>
 				<key>NSThirdPartyExceptionAllowsInsecureHTTPLoads</key>
 				<false/>
-				<key>NSExceptionRequiresForwardSecrecy</key>
-				<false/>
 				<key>NSIncludesSubdomains</key>
 				<false/>
 			</dict>
