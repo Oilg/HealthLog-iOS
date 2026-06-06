@@ -41,6 +41,8 @@ final class GetFreshAnalysisUseCase {
             try await Task.sleep(for: .seconds(initialDelay))
         } catch is CancellationError {
             return .cancelled
+        } catch {
+            return .cancelled
         }
         guard !Task.isCancelled else { return .cancelled }
 
@@ -59,6 +61,8 @@ final class GetFreshAnalysisUseCase {
             do {
                 try await Task.sleep(for: .seconds(pollingInterval))
             } catch is CancellationError {
+                return .cancelled
+            } catch {
                 return .cancelled
             }
             guard !Task.isCancelled else { return .cancelled }

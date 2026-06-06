@@ -46,8 +46,7 @@ final class FakeAnalysisService: AnalysisServiceProtocol {
 // MARK: - GetFreshAnalysisUseCase tests
 
 final class GetFreshAnalysisUseCaseTests: XCTestCase {
-
-    // Вспомогательная фабрика с минимальными задержками для быстрых тестов
+    /// Вспомогательная фабрика с минимальными задержками для быстрых тестов
     private func makeUseCase(
         service: FakeAnalysisService = FakeAnalysisService(),
         clock: FakeClock = FakeClock()
@@ -61,7 +60,7 @@ final class GetFreshAnalysisUseCaseTests: XCTestCase {
         )
     }
 
-    func test_execute_returnsSuccess_whenFreshReportFound() async throws {
+    func test_execute_returnsSuccess_whenFreshReportFound() async {
         let clock = FakeClock()
         let syncStart = clock.now().addingTimeInterval(-1)
 
@@ -72,7 +71,7 @@ final class GetFreshAnalysisUseCaseTests: XCTestCase {
         let useCase = makeUseCase(service: service, clock: clock)
         let result = await useCase.execute(syncStartedAt: syncStart)
 
-        guard case .success(let report) = result else {
+        guard case let .success(report) = result else {
             XCTFail("Expected success, got \(result)")
             return
         }
@@ -295,13 +294,18 @@ final class GetFreshAnalysisUseCaseTests: XCTestCase {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime]
         let isoString = formatter.string(from: analyzedAt)
-        let json = """
+        let jsonString = """
         {
             "analyzed_at": "\(isoString)",
             "risks": []
         }
-        """.data(using: .utf8)!
-        return try! JSONDecoder().decode(AnalysisReport.self, from: json)
+        """
+        guard let data = jsonString.data(using: .utf8),
+              let report = try? JSONDecoder().decode(AnalysisReport.self, from: data) else {
+            XCTFail("Failed to create test AnalysisReport")
+            fatalError("Unreachable in tests")
+        }
+        return report
     }
 }
 
@@ -310,7 +314,7 @@ extension GetFreshAnalysisResult: Equatable {
         switch (lhs, rhs) {
         case (.timedOut, .timedOut): return true
         case (.cancelled, .cancelled): return true
-        case (.success(let a), .success(let b)): return a.analyzedAt == b.analyzedAt
+        case let (.success(a), .success(b)): return a.analyzedAt == b.analyzedAt
         default: return false
         }
     }

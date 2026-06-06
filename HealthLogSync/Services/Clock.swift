@@ -7,5 +7,7 @@ protocol Clock {
 
 /// Системная реализация — возвращает реальное время.
 struct SystemClock: Clock {
-    func now() -> Date { Date() }
+    func now() -> Date {
+        Date()
+    }
 }

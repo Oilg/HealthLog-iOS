@@ -102,7 +102,7 @@ final class DashboardViewModel: ObservableObject {
             guard !Task.isCancelled else { return }
 
             switch result {
-            case .success(let report):
+            case let .success(report):
                 self.latestReport = report
                 self.analysisInProgress = false
                 self.analysisPollingTask = nil
