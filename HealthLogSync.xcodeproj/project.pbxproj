@@ -59,6 +59,9 @@
 		SS000001 /* SyncStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = SS000002 /* SyncStatusTests.swift */; };
 		BIO00001 /* BiometricAuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BIO00002 /* BiometricAuthManager.swift */; };
 		BIO00003 /* BiometricCredentialTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BIO00004 /* BiometricCredentialTests.swift */; };
+		AP000001 /* AnalysisPollingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AP000002 /* AnalysisPollingTests.swift */; };
+		CL000001 /* Clock.swift in Sources */ = {isa = PBXBuildFile; fileRef = CL000002 /* Clock.swift */; };
+		GF000001 /* GetFreshAnalysisUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = GF000002 /* GetFreshAnalysisUseCase.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -135,6 +138,9 @@
 		SS000002 /* SyncStatusTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SyncStatusTests.swift; sourceTree = "<group>"; };
 		BIO00002 /* BiometricAuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometricAuthManager.swift; sourceTree = "<group>"; };
 		BIO00004 /* BiometricCredentialTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BiometricCredentialTests.swift; sourceTree = "<group>"; };
+		AP000002 /* AnalysisPollingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AnalysisPollingTests.swift; sourceTree = "<group>"; };
+		CL000002 /* Clock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clock.swift; sourceTree = "<group>"; };
+		GF000002 /* GetFreshAnalysisUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetFreshAnalysisUseCase.swift; sourceTree = "<group>"; };
 		UI004 /* HealthLogSyncUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HealthLogSyncUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -184,6 +190,7 @@
 				AL000002 /* AutoLogoutOnUnauthorizedTests.swift */,
 				SS000002 /* SyncStatusTests.swift */,
 				BIO00004 /* BiometricCredentialTests.swift */,
+				AP000002 /* AnalysisPollingTests.swift */,
 			);
 			name = HealthLogSyncTests;
 			path = HealthLogSyncTests;
@@ -256,6 +263,7 @@
 				GR000004B /* HealthKit */,
 				GR000004C /* Sync */,
 				BIO00002 /* BiometricAuthManager.swift */,
+				CL000002 /* Clock.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -329,6 +337,7 @@
 				AB000021 /* DashboardView.swift */,
 				AB000022 /* DashboardViewModel.swift */,
 				AB000050 /* WeeklyProgress.swift */,
+				GF000002 /* GetFreshAnalysisUseCase.swift */,
 			);
 			path = Dashboard;
 			sourceTree = "<group>";
@@ -520,6 +529,7 @@
 				AL000001 /* AutoLogoutOnUnauthorizedTests.swift in Sources */,
 				SS000001 /* SyncStatusTests.swift in Sources */,
 				BIO00003 /* BiometricCredentialTests.swift in Sources */,
+				AP000001 /* AnalysisPollingTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -558,6 +568,8 @@
 				8A5467E33081FEB0687BC493 /* RiskItem+UI.swift in Sources */,
 				5B3B5BF8003E78AFF6CA3BA9 /* RiskDetailView.swift in Sources */,
 				BIO00001 /* BiometricAuthManager.swift in Sources */,
+				CL000001 /* Clock.swift in Sources */,
+				GF000001 /* GetFreshAnalysisUseCase.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

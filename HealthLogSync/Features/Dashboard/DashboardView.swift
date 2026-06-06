@@ -10,6 +10,8 @@ struct DashboardView: View {
                     SyncStatusCard(viewModel: viewModel)
                     if viewModel.analysisInProgress {
                         AnalysisInProgressCard()
+                    } else if viewModel.analysisTimedOut {
+                        AnalysisTimedOutCard()
                     } else if let report = viewModel.latestReport {
                         AnalysisReportCard(report: report)
                     } else if viewModel.isLoadingReport {
@@ -122,6 +124,21 @@ private struct SyncStatusCard: View {
                 .foregroundStyle(.red)
                 .clipShape(Capsule())
         }
+    }
+}
+
+private struct AnalysisTimedOutCard: View {
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "clock.badge.exclamationmark")
+                .foregroundStyle(.orange)
+            Text("Анализ занимает больше обычного, обновите вручную")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 }
 
