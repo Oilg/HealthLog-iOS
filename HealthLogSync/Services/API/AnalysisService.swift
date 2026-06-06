@@ -1,6 +1,11 @@
 import Foundation
 
-final class AnalysisService {
+protocol AnalysisServiceProtocol {
+    func fetchLatest() async throws -> AnalysisReport
+    func fetchWeeklyProgress() async throws -> WeeklyProgressResponse
+}
+
+final class AnalysisService: AnalysisServiceProtocol {
     static let shared = AnalysisService()
     private init() {}
 
