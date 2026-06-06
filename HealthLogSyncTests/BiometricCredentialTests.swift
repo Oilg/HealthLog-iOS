@@ -46,12 +46,15 @@ final class BiometricCredentialTests: XCTestCase {
     func test_hasBiometricCredentials_trueAfterStoringViaPlainSave() {
         keychain.save("bob@example.com", for: .biometricEmail)
         keychain.save("pass123", for: .biometricPassword)
+        // Also store the marker that saveBiometricCredentials() would write.
+        keychain.save("1", for: .biometricCredentialsSaved)
         XCTAssertTrue(keychain.hasBiometricCredentials)
     }
 
     func test_deleteBiometricCredentials_makeHasBiometricCredentialsFalse() {
         keychain.save("eve@example.com", for: .biometricEmail)
         keychain.save("pass", for: .biometricPassword)
+        keychain.save("1", for: .biometricCredentialsSaved)
         keychain.deleteBiometricCredentials()
         XCTAssertFalse(keychain.hasBiometricCredentials)
     }
