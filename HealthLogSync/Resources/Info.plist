@@ -22,6 +22,8 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Используйте Face ID для быстрого входа в приложение.</string>
 	<key>NSHealthShareUsageDescription</key>
 	<string>Приложению нужен доступ к данным Apple Health для анализа показателей здоровья и выявления рисков.</string>
 	<key>NSHealthUpdateUsageDescription</key>

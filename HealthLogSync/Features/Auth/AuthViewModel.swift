@@ -1,4 +1,5 @@
 import Foundation
+import LocalAuthentication
 
 @MainActor
 final class AuthViewModel: ObservableObject {
@@ -12,6 +13,32 @@ final class AuthViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     @Published var isPasswordVisible = false
+    @Published var showSaveCredentialsAlert = false
+
+    // MARK: - Biometrics
+
+    var isBiometricAvailable: Bool {
+        BiometricAuthManager.shared.isAvailable
+            && KeychainManager.shared.hasBiometricCredentials
+    }
+
+    var biometricButtonLabel: String {
+        switch BiometricAuthManager.shared.biometryType {
+        case .faceID: return "Войти через Face ID"
+        case .touchID: return "Войти через Touch ID"
+        default: return "Войти через биометрию"
+        }
+    }
+
+    var biometricSystemImage: String {
+        switch BiometricAuthManager.shared.biometryType {
+        case .faceID: return "faceid"
+        case .touchID: return "touchid"
+        default: return "person.badge.key"
+        }
+    }
+
+    // MARK: - Manual login
 
     var isSubmitDisabled: Bool {
         if isLoading { return true }
@@ -37,6 +64,7 @@ final class AuthViewModel: ObservableObject {
                 )
             } else {
                 try await AuthService.shared.login(email: email, password: password)
+                showSaveCredentialsAlert = true
             }
             return true
         } catch {
@@ -44,6 +72,36 @@ final class AuthViewModel: ObservableObject {
             return false
         }
     }
+
+    func saveCredentialsForBiometrics() {
+        KeychainManager.shared.saveBiometricCredentials(email: email, password: password)
+    }
+
+    // MARK: - Biometric login
+
+    /// Returns true if biometric auth succeeded and the user was logged in.
+    func loginWithBiometrics() async -> Bool {
+        let reason = "Войдите в HealthLog, используя биометрию"
+        guard await BiometricAuthManager.shared.authenticate(reason: reason) else {
+            return false
+        }
+        guard let creds = KeychainManager.shared.biometricCredentials() else {
+            errorMessage = "Сохранённые данные для биометрии не найдены"
+            return false
+        }
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+        do {
+            try await AuthService.shared.login(email: creds.email, password: creds.password)
+            return true
+        } catch {
+            errorMessage = error.localizedDescription
+            return false
+        }
+    }
+
+    // MARK: - Helpers
 
     func toggleMode() {
         isRegistering.toggle()

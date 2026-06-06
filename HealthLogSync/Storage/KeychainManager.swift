@@ -4,6 +4,8 @@ import Security
 enum KeychainKey: String {
     case accessToken = "com.healthlogsync.accessToken"
     case refreshToken = "com.healthlogsync.refreshToken"
+    case biometricEmail = "com.healthlogsync.biometricEmail"
+    case biometricPassword = "com.healthlogsync.biometricPassword"
 }
 
 final class KeychainManager {
@@ -50,5 +52,67 @@ final class KeychainManager {
     func deleteAll() {
         delete(.accessToken)
         delete(.refreshToken)
+    }
+
+    // MARK: - Biometric credentials
+
+    /// Saves email and password protected by biometry. Returns true on success.
+    @discardableResult
+    func saveBiometricCredentials(email: String, password: String) -> Bool {
+        guard let access = SecAccessControlCreateWithFlags(
+            nil,
+            kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
+            .biometryAny,
+            nil
+        ) else { return false }
+
+        let emailData = Data(email.utf8)
+        let passwordData = Data(password.utf8)
+
+        func storeItem(account: KeychainKey, data: Data) -> Bool {
+            let deleteQuery: [CFString: Any] = [
+                kSecClass: kSecClassGenericPassword,
+                kSecAttrAccount: account.rawValue,
+            ]
+            SecItemDelete(deleteQuery as CFDictionary)
+            let addQuery: [CFString: Any] = [
+                kSecClass: kSecClassGenericPassword,
+                kSecAttrAccount: account.rawValue,
+                kSecValueData: data,
+                kSecAttrAccessControl: access,
+            ]
+            return SecItemAdd(addQuery as CFDictionary, nil) == errSecSuccess
+        }
+
+        return storeItem(account: .biometricEmail, data: emailData)
+            && storeItem(account: .biometricPassword, data: passwordData)
+    }
+
+    /// Returns stored biometric email+password pair, or nil if none saved.
+    func biometricCredentials() -> (email: String, password: String)? {
+        func loadItem(account: KeychainKey) -> String? {
+            let query: [CFString: Any] = [
+                kSecClass: kSecClassGenericPassword,
+                kSecAttrAccount: account.rawValue,
+                kSecReturnData: true,
+                kSecMatchLimit: kSecMatchLimitOne,
+            ]
+            var result: AnyObject?
+            let status = SecItemCopyMatching(query as CFDictionary, &result)
+            guard status == errSecSuccess, let data = result as? Data else { return nil }
+            return String(data: data, encoding: .utf8)
+        }
+        guard let email = loadItem(account: .biometricEmail),
+              let password = loadItem(account: .biometricPassword) else { return nil }
+        return (email, password)
+    }
+
+    func deleteBiometricCredentials() {
+        delete(.biometricEmail)
+        delete(.biometricPassword)
+    }
+
+    var hasBiometricCredentials: Bool {
+        biometricCredentials() != nil
     }
 }

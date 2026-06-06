@@ -44,7 +44,12 @@ struct AuthView: View {
                         Button {
                             Task {
                                 let success = await viewModel.submit()
-                                if success { appState.onLoginSuccess() }
+                                // For login, onLoginSuccess is triggered by the
+                                // save-credentials alert (either button). For
+                                // registration there is no alert, so call directly.
+                                if success && viewModel.isRegistering {
+                                    appState.onLoginSuccess()
+                                }
                             }
                         } label: {
                             Group {
@@ -61,6 +66,10 @@ struct AuthView: View {
                         }
                         .buttonStyle(.borderedProminent)
                         .disabled(viewModel.isSubmitDisabled)
+
+                        if !viewModel.isRegistering && viewModel.isBiometricAvailable {
+                            biometricButton
+                        }
                     }
                     .padding(.horizontal, 32)
 
@@ -76,6 +85,34 @@ struct AuthView: View {
                 }
             }
         }
+        .alert("Сохранить для Face ID?", isPresented: $viewModel.showSaveCredentialsAlert) {
+            Button("Сохранить") {
+                viewModel.saveCredentialsForBiometrics()
+                appState.onLoginSuccess()
+            }
+            Button("Не сейчас", role: .cancel) {
+                appState.onLoginSuccess()
+            }
+        } message: {
+            Text("Хотите входить в приложение быстрее с помощью биометрии?")
+        }
+    }
+
+    // MARK: - Subviews
+
+    private var biometricButton: some View {
+        Button {
+            Task {
+                let success = await viewModel.loginWithBiometrics()
+                if success { appState.onLoginSuccess() }
+            }
+        } label: {
+            Label(viewModel.biometricButtonLabel, systemImage: viewModel.biometricSystemImage)
+                .frame(maxWidth: .infinity)
+                .frame(height: 50)
+        }
+        .buttonStyle(.bordered)
+        .disabled(viewModel.isLoading)
     }
 
     private var passwordField: some View {
