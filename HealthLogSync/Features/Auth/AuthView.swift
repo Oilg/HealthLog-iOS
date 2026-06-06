@@ -3,6 +3,8 @@ import SwiftUI
 struct AuthView: View {
     @EnvironmentObject var appState: AppState
     @StateObject private var viewModel = AuthViewModel()
+    /// Set to true once onLoginSuccess has been called to avoid double-invocation.
+    @State private var didFinishLogin = false
 
     var body: some View {
         NavigationStack {
@@ -44,7 +46,12 @@ struct AuthView: View {
                         Button {
                             Task {
                                 let success = await viewModel.submit()
-                                if success { appState.onLoginSuccess() }
+                                // For login, onLoginSuccess is triggered by the
+                                // save-credentials alert (either button). For
+                                // registration there is no alert, so call directly.
+                                if success, viewModel.isRegistering {
+                                    appState.onLoginSuccess()
+                                }
                             }
                         } label: {
                             Group {
@@ -61,6 +68,10 @@ struct AuthView: View {
                         }
                         .buttonStyle(.borderedProminent)
                         .disabled(viewModel.isSubmitDisabled)
+
+                        if !viewModel.isRegistering, viewModel.isBiometricAvailable {
+                            biometricButton
+                        }
                     }
                     .padding(.horizontal, 32)
 
@@ -76,6 +87,45 @@ struct AuthView: View {
                 }
             }
         }
+        .alert("Сохранить для Face ID?", isPresented: $viewModel.showSaveCredentialsAlert) {
+            Button("Сохранить") {
+                viewModel.saveCredentialsForBiometrics()
+                finishLogin()
+            }
+            Button("Не сейчас", role: .cancel) {
+                finishLogin()
+            }
+        } message: {
+            Text("Хотите входить в приложение быстрее с помощью биометрии?")
+        }
+        // Guard against system-dismiss (e.g. programmatic binding reset) leaving the
+        // user stuck on the login screen with a valid session.
+        .onChange(of: viewModel.showSaveCredentialsAlert) { isShowing in
+            if !isShowing { finishLogin() }
+        }
+    }
+
+    private func finishLogin() {
+        guard !didFinishLogin else { return }
+        didFinishLogin = true
+        appState.onLoginSuccess()
+    }
+
+    // MARK: - Subviews
+
+    private var biometricButton: some View {
+        Button {
+            Task {
+                let success = await viewModel.loginWithBiometrics()
+                if success { appState.onLoginSuccess() }
+            }
+        } label: {
+            Label(viewModel.biometricButtonLabel, systemImage: viewModel.biometricSystemImage)
+                .frame(maxWidth: .infinity)
+                .frame(height: 50)
+        }
+        .buttonStyle(.bordered)
+        .disabled(viewModel.isLoading)
     }
 
     private var passwordField: some View {

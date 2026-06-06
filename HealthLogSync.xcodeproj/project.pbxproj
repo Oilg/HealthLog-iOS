@@ -57,6 +57,8 @@
 		UI002 /* AppLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UI001 /* AppLaunchTests.swift */; };
 		AL000001 /* AutoLogoutOnUnauthorizedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AL000002 /* AutoLogoutOnUnauthorizedTests.swift */; };
 		SS000001 /* SyncStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = SS000002 /* SyncStatusTests.swift */; };
+		BIO00001 /* BiometricAuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BIO00002 /* BiometricAuthManager.swift */; };
+		BIO00003 /* BiometricCredentialTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BIO00004 /* BiometricCredentialTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -131,6 +133,8 @@
 		UI001 /* AppLaunchTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppLaunchTests.swift; sourceTree = "<group>"; };
 		AL000002 /* AutoLogoutOnUnauthorizedTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AutoLogoutOnUnauthorizedTests.swift; sourceTree = "<group>"; };
 		SS000002 /* SyncStatusTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SyncStatusTests.swift; sourceTree = "<group>"; };
+		BIO00002 /* BiometricAuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometricAuthManager.swift; sourceTree = "<group>"; };
+		BIO00004 /* BiometricCredentialTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BiometricCredentialTests.swift; sourceTree = "<group>"; };
 		UI004 /* HealthLogSyncUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HealthLogSyncUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -179,6 +183,7 @@
 				AFFFD04CF9112EEB91F839F6 /* TimezoneDOBTests.swift */,
 				AL000002 /* AutoLogoutOnUnauthorizedTests.swift */,
 				SS000002 /* SyncStatusTests.swift */,
+				BIO00004 /* BiometricCredentialTests.swift */,
 			);
 			name = HealthLogSyncTests;
 			path = HealthLogSyncTests;
@@ -250,6 +255,7 @@
 				GR000004A /* API */,
 				GR000004B /* HealthKit */,
 				GR000004C /* Sync */,
+				BIO00002 /* BiometricAuthManager.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -513,6 +519,7 @@
 				7E5F0BFD2B00FDFBE48BA092 /* TimezoneDOBTests.swift in Sources */,
 				AL000001 /* AutoLogoutOnUnauthorizedTests.swift in Sources */,
 				SS000001 /* SyncStatusTests.swift in Sources */,
+				BIO00003 /* BiometricCredentialTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -550,6 +557,7 @@
 				AA000026 /* SettingsView.swift in Sources */,
 				8A5467E33081FEB0687BC493 /* RiskItem+UI.swift in Sources */,
 				5B3B5BF8003E78AFF6CA3BA9 /* RiskDetailView.swift in Sources */,
+				BIO00001 /* BiometricAuthManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
