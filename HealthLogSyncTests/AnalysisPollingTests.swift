@@ -301,7 +301,8 @@ final class GetFreshAnalysisUseCaseTests: XCTestCase {
         }
         """
         guard let data = jsonString.data(using: .utf8),
-              let report = try? JSONDecoder().decode(AnalysisReport.self, from: data) else {
+              let report = try? JSONDecoder().decode(AnalysisReport.self, from: data)
+        else {
             XCTFail("Failed to create test AnalysisReport")
             fatalError("Unreachable in tests")
         }
