@@ -3,6 +3,8 @@ import SwiftUI
 struct AuthView: View {
     @EnvironmentObject var appState: AppState
     @StateObject private var viewModel = AuthViewModel()
+    /// Set to true once onLoginSuccess has been called to avoid double-invocation.
+    @State private var didFinishLogin = false
 
     var body: some View {
         NavigationStack {
@@ -88,14 +90,25 @@ struct AuthView: View {
         .alert("Сохранить для Face ID?", isPresented: $viewModel.showSaveCredentialsAlert) {
             Button("Сохранить") {
                 viewModel.saveCredentialsForBiometrics()
-                appState.onLoginSuccess()
+                finishLogin()
             }
             Button("Не сейчас", role: .cancel) {
-                appState.onLoginSuccess()
+                finishLogin()
             }
         } message: {
             Text("Хотите входить в приложение быстрее с помощью биометрии?")
         }
+        // Guard against system-dismiss (e.g. programmatic binding reset) leaving the
+        // user stuck on the login screen with a valid session.
+        .onChange(of: viewModel.showSaveCredentialsAlert) { isShowing in
+            if !isShowing { finishLogin() }
+        }
+    }
+
+    private func finishLogin() {
+        guard !didFinishLogin else { return }
+        didFinishLogin = true
+        appState.onLoginSuccess()
     }
 
     // MARK: - Subviews

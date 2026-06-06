@@ -6,6 +6,8 @@ enum KeychainKey: String {
     case refreshToken = "com.healthlogsync.refreshToken"
     case biometricEmail = "com.healthlogsync.biometricEmail"
     case biometricPassword = "com.healthlogsync.biometricPassword"
+    /// Plain (no biometry gate) marker — set when biometric credentials are saved.
+    case biometricCredentialsSaved = "com.healthlogsync.biometricCredentialsSaved"
 }
 
 final class KeychainManager {
@@ -84,8 +86,14 @@ final class KeychainManager {
             return SecItemAdd(addQuery as CFDictionary, nil) == errSecSuccess
         }
 
-        return storeItem(account: .biometricEmail, data: emailData)
+        let stored = storeItem(account: .biometricEmail, data: emailData)
             && storeItem(account: .biometricPassword, data: passwordData)
+        if stored {
+            // Store a plain (no biometry gate) marker so hasBiometricCredentials
+            // can be checked without triggering a biometric prompt.
+            save("1", for: .biometricCredentialsSaved)
+        }
+        return stored
     }
 
     /// Returns stored biometric email+password pair, or nil if none saved.
@@ -110,9 +118,11 @@ final class KeychainManager {
     func deleteBiometricCredentials() {
         delete(.biometricEmail)
         delete(.biometricPassword)
+        delete(.biometricCredentialsSaved)
     }
 
+    /// Returns true without triggering a biometric prompt.
     var hasBiometricCredentials: Bool {
-        biometricCredentials() != nil
+        get(.biometricCredentialsSaved) != nil
     }
 }
