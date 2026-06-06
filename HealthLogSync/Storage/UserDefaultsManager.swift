@@ -67,6 +67,5 @@ final class UserDefaultsManager {
         lastSyncAt = nil
         initialSyncCompleted = false
         initialSyncProgress = nil
-        healthKitAuthorized = false
     }
 }
