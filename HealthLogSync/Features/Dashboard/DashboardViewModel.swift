@@ -11,6 +11,7 @@ final class DashboardViewModel: ObservableObject {
 
     private var analysisReadyObserver: NSObjectProtocol?
     private var weeklyProgressTask: Task<Void, Never>?
+    private var analysisPollingTask: Task<Void, Never>?
 
     init() {
         analysisReadyObserver = NotificationCenter.default.addObserver(
@@ -20,6 +21,8 @@ final class DashboardViewModel: ObservableObject {
         ) { [weak self] _ in
             guard let self else { return }
             Task { @MainActor in
+                self.analysisPollingTask?.cancel()
+                self.analysisPollingTask = nil
                 self.analysisInProgress = false
                 await self.loadLatestReport()
                 self.weeklyProgressTask?.cancel()
@@ -32,9 +35,13 @@ final class DashboardViewModel: ObservableObject {
         if let observer = analysisReadyObserver {
             NotificationCenter.default.removeObserver(observer)
         }
+        analysisPollingTask?.cancel()
+        weeklyProgressTask?.cancel()
     }
 
     func refresh() async {
+        analysisPollingTask?.cancel()
+        analysisPollingTask = nil
         analysisInProgress = false
         await loadLatestReport()
         weeklyProgressTask?.cancel()
@@ -72,5 +79,48 @@ final class DashboardViewModel: ObservableObject {
 
     func markAnalysisInProgress() {
         analysisInProgress = true
+        let syncStartedAt = Date()
+        analysisPollingTask?.cancel()
+        analysisPollingTask = Task {
+            try? await Task.sleep(for: .seconds(10))
+            guard !Task.isCancelled else { return }
+            let deadline = Date().addingTimeInterval(50)
+            while Date() < deadline {
+                guard !Task.isCancelled else { return }
+                if let report = try? await AnalysisService.shared.fetchLatest(),
+                   let reportDate = parseISO8601(report.analyzedAt),
+                   reportDate > syncStartedAt {
+                    await MainActor.run {
+                        self.latestReport = report
+                        self.analysisInProgress = false
+                        self.analysisPollingTask = nil
+                        self.weeklyProgressTask?.cancel()
+                        self.weeklyProgressTask = Task { await self.loadWeeklyProgress() }
+                    }
+                    return
+                }
+                try? await Task.sleep(for: .seconds(5))
+                guard !Task.isCancelled else { return }
+            }
+            await MainActor.run {
+                self.analysisInProgress = false
+                self.analysisPollingTask = nil
+            }
+        }
+    }
+
+    nonisolated private func parseISO8601(_ string: String) -> Date? {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = formatter.date(from: string) { return date }
+        formatter.formatOptions = [.withInternetDateTime]
+        if let date = formatter.date(from: string) { return date }
+        let df = DateFormatter()
+        df.locale = Locale(identifier: "en_US_POSIX")
+        df.timeZone = TimeZone(identifier: "UTC")
+        df.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
+        if let date = df.date(from: string) { return date }
+        df.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        return df.date(from: string)
     }
 }

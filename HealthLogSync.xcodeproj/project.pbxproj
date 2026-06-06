@@ -56,6 +56,7 @@
 		AA000029 /* BackgroundTasks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB000029 /* BackgroundTasks.framework */; };
 		UI002 /* AppLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UI001 /* AppLaunchTests.swift */; };
 		AL000001 /* AutoLogoutOnUnauthorizedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AL000002 /* AutoLogoutOnUnauthorizedTests.swift */; };
+		SS000001 /* SyncStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = SS000002 /* SyncStatusTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -129,6 +130,7 @@
 		C8FF204168773B71D7C9A7C4 /* HealthLogSyncTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HealthLogSyncTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		UI001 /* AppLaunchTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppLaunchTests.swift; sourceTree = "<group>"; };
 		AL000002 /* AutoLogoutOnUnauthorizedTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AutoLogoutOnUnauthorizedTests.swift; sourceTree = "<group>"; };
+		SS000002 /* SyncStatusTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SyncStatusTests.swift; sourceTree = "<group>"; };
 		UI004 /* HealthLogSyncUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HealthLogSyncUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -176,6 +178,7 @@
 				AFFFD04BF9112EEB91F839F5 /* AppDelegateForegroundNoSyncTests.swift */,
 				AFFFD04CF9112EEB91F839F6 /* TimezoneDOBTests.swift */,
 				AL000002 /* AutoLogoutOnUnauthorizedTests.swift */,
+				SS000002 /* SyncStatusTests.swift */,
 			);
 			name = HealthLogSyncTests;
 			path = HealthLogSyncTests;
@@ -509,6 +512,7 @@
 				7E5F0BFC2B00FDFBE48BA091 /* AppDelegateForegroundNoSyncTests.swift in Sources */,
 				7E5F0BFD2B00FDFBE48BA092 /* TimezoneDOBTests.swift in Sources */,
 				AL000001 /* AutoLogoutOnUnauthorizedTests.swift in Sources */,
+				SS000001 /* SyncStatusTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
