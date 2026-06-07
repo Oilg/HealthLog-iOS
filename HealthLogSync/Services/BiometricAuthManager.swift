@@ -24,23 +24,25 @@ final class BiometricAuthManager {
         return context.biometryType
     }
 
-    /// Asks the user to authenticate. Returns `true` on success, `false` on any failure/cancel.
-    func authenticate(reason: String) async -> Bool {
-        guard !isAuthenticating else { return false }
+    /// Asks the user to authenticate. Returns the authenticated `LAContext` on success so callers
+    /// can reuse it for Keychain reads without triggering a second biometric prompt.
+    func authenticate(reason: String) async -> LAContext? {
+        guard !isAuthenticating else { return nil }
         isAuthenticating = true
         defer { isAuthenticating = false }
         let context = LAContext()
         var error: NSError?
         guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
-            return false
+            return nil
         }
         do {
-            return try await context.evaluatePolicy(
+            let success = try await context.evaluatePolicy(
                 .deviceOwnerAuthenticationWithBiometrics,
                 localizedReason: reason
             )
+            return success ? context : nil
         } catch {
-            return false
+            return nil
         }
     }
 }

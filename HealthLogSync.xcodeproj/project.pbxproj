@@ -136,6 +136,8 @@
 		UI001 /* AppLaunchTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppLaunchTests.swift; sourceTree = "<group>"; };
 		AL000002 /* AutoLogoutOnUnauthorizedTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AutoLogoutOnUnauthorizedTests.swift; sourceTree = "<group>"; };
 		SS000002 /* SyncStatusTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SyncStatusTests.swift; sourceTree = "<group>"; };
+		DG000001 /* FaceIDTripleTriggerDiagnosticTests.swift */ = {isa = PBXBuildFile; fileRef = DG000002 /* FaceIDTripleTriggerDiagnosticTests.swift */; };
+		DG000002 /* FaceIDTripleTriggerDiagnosticTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FaceIDTripleTriggerDiagnosticTests.swift; sourceTree = "<group>"; };
 		BIO00002 /* BiometricAuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometricAuthManager.swift; sourceTree = "<group>"; };
 		BIO00004 /* BiometricCredentialTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BiometricCredentialTests.swift; sourceTree = "<group>"; };
 		AP000002 /* AnalysisPollingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AnalysisPollingTests.swift; sourceTree = "<group>"; };
@@ -189,6 +191,7 @@
 				AFFFD04CF9112EEB91F839F6 /* TimezoneDOBTests.swift */,
 				AL000002 /* AutoLogoutOnUnauthorizedTests.swift */,
 				SS000002 /* SyncStatusTests.swift */,
+				DG000002 /* FaceIDTripleTriggerDiagnosticTests.swift */,
 				BIO00004 /* BiometricCredentialTests.swift */,
 				AP000002 /* AnalysisPollingTests.swift */,
 			);
@@ -528,6 +531,7 @@
 				7E5F0BFD2B00FDFBE48BA092 /* TimezoneDOBTests.swift in Sources */,
 				AL000001 /* AutoLogoutOnUnauthorizedTests.swift in Sources */,
 				SS000001 /* SyncStatusTests.swift in Sources */,
+				DG000001 /* FaceIDTripleTriggerDiagnosticTests.swift in Sources */,
 				BIO00003 /* BiometricCredentialTests.swift in Sources */,
 				AP000001 /* AnalysisPollingTests.swift in Sources */,
 			);

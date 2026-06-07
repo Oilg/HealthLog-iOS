@@ -24,8 +24,6 @@ final class AuthViewModel: ObservableObject {
             guard let self else { return }
             guard BiometricAuthManager.shared.isAvailable,
                   KeychainManager.shared.hasBiometricCredentials else { return }
-            // Wait for the screen to fully appear and user to orient the phone
-            try? await Task.sleep(for: .milliseconds(800))
             let success = await loginWithBiometrics()
             if success { biometricAutoLoginSucceeded = true }
         }
@@ -96,10 +94,10 @@ final class AuthViewModel: ObservableObject {
     /// Returns true if biometric auth succeeded and the user was logged in.
     func loginWithBiometrics() async -> Bool {
         let reason = "Войдите в HealthLog, используя биометрию"
-        guard await BiometricAuthManager.shared.authenticate(reason: reason) else {
+        guard let context = await BiometricAuthManager.shared.authenticate(reason: reason) else {
             return false
         }
-        guard let creds = KeychainManager.shared.biometricCredentials() else {
+        guard let creds = KeychainManager.shared.biometricCredentials(context: context) else {
             errorMessage = "Сохранённые данные для биометрии не найдены"
             return false
         }

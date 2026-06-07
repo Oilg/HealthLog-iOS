@@ -97,13 +97,16 @@ final class KeychainManager {
     }
 
     /// Returns stored biometric email+password pair, or nil if none saved.
-    func biometricCredentials() -> (email: String, password: String)? {
+    /// Pass the `LAContext` returned by `BiometricAuthManager.authenticate(reason:)` so that
+    /// iOS reuses the already-evaluated authentication and does NOT show a second Face ID prompt.
+    func biometricCredentials(context: LAContext) -> (email: String, password: String)? {
         func loadItem(account: KeychainKey) -> String? {
             let query: [CFString: Any] = [
                 kSecClass: kSecClassGenericPassword,
                 kSecAttrAccount: account.rawValue,
                 kSecReturnData: true,
                 kSecMatchLimit: kSecMatchLimitOne,
+                kSecUseAuthenticationContext: context,
             ]
             var result: AnyObject?
             let status = SecItemCopyMatching(query as CFDictionary, &result)
