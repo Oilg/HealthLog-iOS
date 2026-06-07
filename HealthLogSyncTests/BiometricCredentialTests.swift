@@ -1,5 +1,5 @@
-import XCTest
 import LocalAuthentication
+import XCTest
 @testable import HealthLogSync
 
 final class BiometricCredentialTests: XCTestCase {

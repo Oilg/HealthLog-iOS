@@ -1,5 +1,5 @@
-import XCTest
 import Combine
+import XCTest
 @testable import HealthLogSync
 
 /// Диагностический тест для понимания причины тройного срабатывания Face ID.
@@ -7,7 +7,6 @@ import Combine
 /// и не флипает ли isLoggedIn false→true→false в петле.
 @MainActor
 final class FaceIDTripleTriggerDiagnosticTests: XCTestCase {
-
     private var cancellables = Set<AnyCancellable>()
 
     override func tearDown() {
@@ -67,11 +66,16 @@ final class FaceIDTripleTriggerDiagnosticTests: XCTestCase {
 
         await fulfillment(of: [expiredExpectation], timeout: 0.1)
 
-        XCTAssertEqual(sessionExpiredCount, 0,
+        XCTAssertEqual(
+            sessionExpiredCount,
+            0,
             "sessionDidExpire НЕ должен срабатывать после успешного логина. Сработал \(sessionExpiredCount) раз(а). " +
-            "История isLoggedIn: \(isLoggedInHistory)")
-        XCTAssertTrue(appState.isLoggedIn,
-            "isLoggedIn должен оставаться true после onLoginSuccess(). История: \(isLoggedInHistory)")
+                "История isLoggedIn: \(isLoggedInHistory)"
+        )
+        XCTAssertTrue(
+            appState.isLoggedIn,
+            "isLoggedIn должен оставаться true после onLoginSuccess(). История: \(isLoggedInHistory)"
+        )
     }
 
     // MARK: - Тест 2: сколько раз AuthViewModel создаётся при показе AuthView
@@ -87,7 +91,7 @@ final class FaceIDTripleTriggerDiagnosticTests: XCTestCase {
         // Создаём 3 экземпляра AuthViewModel (симуляция пересоздания AuthView)
         // и проверяем что это не вызывает проблем
         var viewModels: [AuthViewModel] = []
-        for i in 1...3 {
+        for i in 1 ... 3 {
             let vm = AuthViewModel()
             viewModels.append(vm)
             initCount += 1
@@ -131,7 +135,7 @@ final class FaceIDTripleTriggerDiagnosticTests: XCTestCase {
         defer { NotificationCenter.default.removeObserver(expiredObserver) }
 
         // Симуляция петли: login → session expire → login → session expire → login (успех)
-        for round in 1...3 {
+        for round in 1 ... 3 {
             print("🔄 [TEST] Раунд \(round): сохраняем токены и вызываем onLoginSuccess()")
             KeychainManager.shared.save("token-round-\(round)", for: .accessToken)
             KeychainManager.shared.save("refresh-round-\(round)", for: .refreshToken)
