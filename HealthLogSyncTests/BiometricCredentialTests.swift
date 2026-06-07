@@ -1,3 +1,4 @@
+import LocalAuthentication
 import XCTest
 @testable import HealthLogSync
 
@@ -23,7 +24,7 @@ final class BiometricCredentialTests: XCTestCase {
     // MARK: - saveBiometricCredentials / biometricCredentials
 
     func test_biometricCredentials_nilWhenNothingSaved() {
-        XCTAssertNil(keychain.biometricCredentials())
+        XCTAssertNil(keychain.biometricCredentials(context: LAContext()))
     }
 
     func test_deleteBiometricCredentials_removesStoredValues() {
@@ -38,7 +39,7 @@ final class BiometricCredentialTests: XCTestCase {
     func test_biometricCredentials_returnsValuesStoredViaPlainSave() {
         keychain.save("alice@example.com", for: .biometricEmail)
         keychain.save("hunter2", for: .biometricPassword)
-        let creds = keychain.biometricCredentials()
+        let creds = keychain.biometricCredentials(context: LAContext())
         XCTAssertEqual(creds?.email, "alice@example.com")
         XCTAssertEqual(creds?.password, "hunter2")
     }
@@ -67,7 +68,10 @@ final class BiometricCredentialTests: XCTestCase {
         viewModel.email = "test@example.com"
         viewModel.password = "mypassword"
         viewModel.saveCredentialsForBiometrics()
-        let creds = keychain.biometricCredentials()
+        // Use a plain LAContext — items saved via saveBiometricCredentials() have .biometryAny
+        // access control, but in the simulator the keychain does not enforce biometry so this
+        // still returns the stored values.
+        let creds = keychain.biometricCredentials(context: LAContext())
         XCTAssertEqual(creds?.email, "test@example.com")
         XCTAssertEqual(creds?.password, "mypassword")
     }
