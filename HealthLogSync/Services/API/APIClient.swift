@@ -20,50 +20,12 @@ extension Notification.Name {
     static let sessionDidExpire = Notification.Name("com.healthlogsync.sessionDidExpire")
 }
 
-// MARK: - Certificate Pinning Delegate
-
-private final class CertificatePinningDelegate: NSObject, URLSessionDelegate {
-    func urlSession(
-        _: URLSession,
-        didReceive challenge: URLAuthenticationChallenge,
-        completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
-    ) {
-        guard challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
-              let serverTrust = challenge.protectionSpace.serverTrust
-        else {
-            completionHandler(.cancelAuthenticationChallenge, nil)
-            return
-        }
-
-        // Load our bundled server certificate and use it as the only trusted anchor.
-        // This allows the self-signed cert to pass trust evaluation without
-        // requiring users to install anything on their device.
-        guard let certURL = Bundle.main.url(forResource: "server", withExtension: "cer"),
-              let certData = try? Data(contentsOf: certURL),
-              let pinnedCert = SecCertificateCreateWithData(nil, certData as CFData)
-        else {
-            completionHandler(.cancelAuthenticationChallenge, nil)
-            return
-        }
-
-        SecTrustSetAnchorCertificates(serverTrust, [pinnedCert] as CFArray)
-        SecTrustSetAnchorCertificatesOnly(serverTrust, true)
-
-        var error: CFError?
-        if SecTrustEvaluateWithError(serverTrust, &error) {
-            completionHandler(.useCredential, URLCredential(trust: serverTrust))
-        } else {
-            completionHandler(.cancelAuthenticationChallenge, nil)
-        }
-    }
-}
-
 // MARK: - APIClient
 
 final class APIClient {
     static let shared = APIClient()
 
-    private let baseURL: String = "https://5.129.199.50"
+    private let baseURL: String = "https://healthlog.tech"
     private let session: URLSession
     private let decoder: JSONDecoder
     private let encoder: JSONEncoder
@@ -72,8 +34,7 @@ final class APIClient {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 60
         config.timeoutIntervalForResource = 300
-        let delegate = CertificatePinningDelegate()
-        session = URLSession(configuration: config, delegate: delegate, delegateQueue: nil)
+        session = URLSession(configuration: config)
         decoder = JSONDecoder()
         encoder = JSONEncoder()
     }
