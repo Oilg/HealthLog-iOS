@@ -74,12 +74,6 @@ struct AuthView: View {
                         }
                     }
                     .padding(.horizontal, 32)
-                    .task {
-                        guard !viewModel.didAttemptBiometricAutoTrigger, viewModel.isBiometricAvailable else { return }
-                        viewModel.didAttemptBiometricAutoTrigger = true
-                        let success = await viewModel.loginWithBiometrics()
-                        if success { finishLogin() }
-                    }
 
                     Button {
                         viewModel.toggleMode()
@@ -108,6 +102,9 @@ struct AuthView: View {
         // user stuck on the login screen with a valid session.
         .onChange(of: viewModel.showSaveCredentialsAlert) { wasShowing, isShowing in
             if wasShowing, !isShowing { finishLogin() }
+        }
+        .onChange(of: viewModel.biometricAutoLoginSucceeded) { _, succeeded in
+            if succeeded { finishLogin() }
         }
     }
 
