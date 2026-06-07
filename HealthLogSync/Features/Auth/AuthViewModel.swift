@@ -24,6 +24,8 @@ final class AuthViewModel: ObservableObject {
             guard let self else { return }
             guard BiometricAuthManager.shared.isAvailable,
                   KeychainManager.shared.hasBiometricCredentials else { return }
+            // Wait for the screen to fully appear and user to orient the phone
+            try? await Task.sleep(for: .milliseconds(800))
             let success = await loginWithBiometrics()
             if success { biometricAutoLoginSucceeded = true }
         }
