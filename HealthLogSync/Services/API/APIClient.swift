@@ -43,7 +43,8 @@ final class APIClient {
         path: String,
         method: String = "GET",
         body: (any Encodable)? = nil,
-        requiresAuth: Bool = true
+        requiresAuth: Bool = true,
+        postSessionExpiredOnUnauthorized: Bool = true
     ) async throws -> T {
         guard let url = URL(string: baseURL + path) else {
             throw APIClientError.serverError("Неверный URL")
@@ -72,9 +73,17 @@ final class APIClient {
             if http.statusCode == 401 {
                 let refreshed = try await refreshTokens()
                 if refreshed {
-                    return try await self.request(path: path, method: method, body: body, requiresAuth: requiresAuth)
+                    return try await self.request(
+                        path: path,
+                        method: method,
+                        body: body,
+                        requiresAuth: requiresAuth,
+                        postSessionExpiredOnUnauthorized: postSessionExpiredOnUnauthorized
+                    )
                 }
-                NotificationCenter.default.post(name: .sessionDidExpire, object: nil)
+                if postSessionExpiredOnUnauthorized {
+                    NotificationCenter.default.post(name: .sessionDidExpire, object: nil)
+                }
                 throw APIClientError.unauthorized
             }
 
