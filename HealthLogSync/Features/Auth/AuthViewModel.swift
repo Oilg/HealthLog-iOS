@@ -17,10 +17,17 @@ final class AuthViewModel: ObservableObject {
 
     // MARK: - Biometrics
 
-    /// Tracks whether the auto-trigger on appear has already fired.
-    /// Stored on the ViewModel (a @StateObject) rather than as @State so it
-    /// survives SwiftUI view-struct recreation caused by AppState republishing.
-    var didAttemptBiometricAutoTrigger = false
+    @Published var biometricAutoLoginSucceeded = false
+
+    init() {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            guard BiometricAuthManager.shared.isAvailable,
+                  KeychainManager.shared.hasBiometricCredentials else { return }
+            let success = await self.loginWithBiometrics()
+            if success { self.biometricAutoLoginSucceeded = true }
+        }
+    }
 
     var isBiometricAvailable: Bool {
         BiometricAuthManager.shared.isAvailable
@@ -112,8 +119,6 @@ final class AuthViewModel: ObservableObject {
         isRegistering.toggle()
         errorMessage = nil
         isPasswordVisible = false
-        // Allow biometric auto-trigger again if the user returns to the login tab.
-        didAttemptBiometricAutoTrigger = false
     }
 
     func togglePasswordVisibility() {
