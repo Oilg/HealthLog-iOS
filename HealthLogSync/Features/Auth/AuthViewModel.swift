@@ -24,8 +24,8 @@ final class AuthViewModel: ObservableObject {
             guard let self else { return }
             guard BiometricAuthManager.shared.isAvailable,
                   KeychainManager.shared.hasBiometricCredentials else { return }
-            let success = await self.loginWithBiometrics()
-            if success { self.biometricAutoLoginSucceeded = true }
+            let success = await loginWithBiometrics()
+            if success { biometricAutoLoginSucceeded = true }
         }
     }
 
