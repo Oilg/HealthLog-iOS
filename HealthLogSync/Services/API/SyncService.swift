@@ -28,10 +28,13 @@ final class SyncService {
     }
 
     func fetchSyncStatus() async throws -> SyncStatusResponse {
+        // postSessionExpiredOnUnauthorized: false — this is a best-effort check on login;
+        // a 401 here must not trigger logout (tokens may not yet be propagated server-side).
         try await APIClient.shared.request(
             path: "/api/v1/health/sync/status",
             method: "GET",
-            body: nil as String?
+            body: nil as String?,
+            postSessionExpiredOnUnauthorized: false
         )
     }
 }

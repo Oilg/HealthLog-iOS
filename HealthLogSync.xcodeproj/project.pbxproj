@@ -51,7 +51,6 @@
 		AA000025 /* ReportDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000025 /* ReportDetailView.swift */; };
 		AA000026 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000026 /* SettingsView.swift */; };
 		AA000027 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AB000027 /* Assets.xcassets */; };
-		AA000032 /* server.cer in Resources */ = {isa = PBXBuildFile; fileRef = AB000032 /* server.cer */; };
 		AA000028 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB000028 /* HealthKit.framework */; };
 		AA000029 /* BackgroundTasks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB000029 /* BackgroundTasks.framework */; };
 		UI002 /* AppLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UI001 /* AppLaunchTests.swift */; };
@@ -121,7 +120,6 @@
 		AB000029 /* BackgroundTasks.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BackgroundTasks.framework; path = System/Library/Frameworks/BackgroundTasks.framework; sourceTree = SDKROOT; };
 		AB000030 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AB000031 /* HealthLogSync.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HealthLogSync.entitlements; sourceTree = "<group>"; };
-		AB000032 /* server.cer */ = {isa = PBXFileReference; lastKnownFileType = file; path = "server.cer"; sourceTree = "<group>"; };
 		AC000001 /* HealthLogSync.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HealthLogSync.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AFFFD044F9112EEB91F839EE /* SyncManagerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SyncManagerTests.swift; sourceTree = "<group>"; };
 		AFFFD045F9112EEB91F839EF /* AuthViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AuthViewModelTests.swift; sourceTree = "<group>"; };
@@ -370,7 +368,6 @@
 				AB000027 /* Assets.xcassets */,
 				AB000030 /* Info.plist */,
 				AB000031 /* HealthLogSync.entitlements */,
-				AB000032 /* server.cer */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -492,7 +489,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA000027 /* Assets.xcassets in Resources */,
-				AA000032 /* server.cer in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

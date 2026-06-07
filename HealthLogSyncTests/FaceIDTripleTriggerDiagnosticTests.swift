@@ -58,7 +58,9 @@ final class FaceIDTripleTriggerDiagnosticTests: XCTestCase {
         appState.onLoginSuccess()
         print("🟢 [TEST] onLoginSuccess() вызван, isLoggedIn=\(appState.isLoggedIn)")
 
-        // Ждём 3 секунды — время для checkSyncStatusAndSkipOnboardingIfNeeded() с сетевым вызовом
+        // Ждём 3 секунды — время для checkSyncStatusAndSkipOnboardingIfNeeded() с сетевым вызовом.
+        // SyncService.fetchSyncStatus() использует postSessionExpiredOnUnauthorized: false,
+        // поэтому 401 от сервера НЕ должен вызывать sessionDidExpire.
         try await Task.sleep(nanoseconds: 3_000_000_000)
 
         print("📊 [TEST] Итог через 3с: isLoggedIn=\(appState.isLoggedIn), sessionExpiredCount=\(sessionExpiredCount)")
