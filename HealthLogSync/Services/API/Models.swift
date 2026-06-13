@@ -226,3 +226,64 @@ struct SyncStatusResponse: Decodable {
 struct APIError: Decodable, Error {
     let detail: String
 }
+
+/// A type-erased Decodable value for heterogeneous JSON dictionaries (e.g. Pydantic `ctx`).
+enum AnyCodable: Decodable {
+    case int(Int)
+    case double(Double)
+    case string(String)
+    case bool(Bool)
+    case null
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let val = try? container.decode(Int.self) { self = .int(val) }
+        else if let val = try? container.decode(Double.self) { self = .double(val) }
+        else if let val = try? container.decode(String.self) { self = .string(val) }
+        else if let val = try? container.decode(Bool.self) { self = .bool(val) }
+        else { self = .null }
+    }
+
+    var intValue: Int? {
+        if case .int(let v) = self { return v }
+        if case .double(let v) = self { return Int(v) }
+        return nil
+    }
+}
+
+/// Single validation error item returned by the backend (Pydantic format).
+struct ValidationErrorItem: Decodable {
+    let type: String
+    let msg: String
+    let loc: [LocSegment]
+    /// Optional context dictionary — e.g. `{"min_length": 8}` for string_too_short.
+    let ctx: [String: AnyCodable]?
+
+    enum LocSegment: Decodable {
+        case string(String)
+        case int(Int)
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            if let str = try? container.decode(String.self) {
+                self = .string(str)
+            } else if let int = try? container.decode(Int.self) {
+                self = .int(int)
+            } else {
+                self = .string("?")
+            }
+        }
+
+        var stringValue: String {
+            switch self {
+            case .string(let s): return s
+            case .int(let i): return String(i)
+            }
+        }
+    }
+
+    /// Field name from loc array (skips "body" prefix).
+    var fieldName: String {
+        loc.map(\.stringValue).filter { $0 != "body" }.joined(separator: ".")
+    }
+}

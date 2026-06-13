@@ -34,7 +34,16 @@ struct AuthView: View {
                             .autocapitalization(.none)
                             .textFieldStyle(.roundedBorder)
 
-                        passwordField
+                        VStack(alignment: .leading, spacing: 4) {
+                            passwordField
+
+                            if let hint = viewModel.passwordHint {
+                                Text(hint)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .padding(.leading, 4)
+                            }
+                        }
 
                         if let error = viewModel.errorMessage {
                             Text(error)

@@ -62,4 +62,79 @@ final class AuthViewModelTests: XCTestCase {
         viewModel.password = "pass"
         XCTAssertFalse(viewModel.isSubmitDisabled)
     }
+
+    // MARK: - passwordHint
+
+    func test_passwordHint_nilWhenNotRegistering() {
+        let viewModel = AuthViewModel()
+        viewModel.isRegistering = false
+        viewModel.password = "123"
+        XCTAssertNil(viewModel.passwordHint)
+    }
+
+    func test_passwordHint_nilWhenPasswordEmpty() {
+        let viewModel = AuthViewModel()
+        viewModel.isRegistering = true
+        viewModel.password = ""
+        XCTAssertNil(viewModel.passwordHint)
+    }
+
+    func test_passwordHint_nilWhenPasswordLongEnough() {
+        let viewModel = AuthViewModel()
+        viewModel.isRegistering = true
+        viewModel.password = "12345678"
+        XCTAssertNil(viewModel.passwordHint)
+    }
+
+    func test_passwordHint_presentWhenPasswordTooShort() {
+        let viewModel = AuthViewModel()
+        viewModel.isRegistering = true
+        viewModel.password = "1234567"
+        XCTAssertNotNil(viewModel.passwordHint)
+        XCTAssertTrue(viewModel.passwordHint!.contains("8"))
+    }
+
+    // MARK: - Local validation
+
+    func test_submit_setsErrorWhenFirstNameEmpty() async {
+        let viewModel = AuthViewModel()
+        viewModel.isRegistering = true
+        viewModel.firstName = "   "
+        viewModel.lastName = "Doe"
+        viewModel.email = "a@b.c"
+        viewModel.password = "12345678"
+        viewModel.phone = "+7999"
+        let result = await viewModel.submit()
+        XCTAssertFalse(result)
+        XCTAssertNotNil(viewModel.errorMessage)
+        XCTAssertTrue(viewModel.errorMessage!.lowercased().contains("имя"))
+    }
+
+    func test_submit_setsErrorWhenLastNameEmpty() async {
+        let viewModel = AuthViewModel()
+        viewModel.isRegistering = true
+        viewModel.firstName = "John"
+        viewModel.lastName = ""
+        viewModel.email = "a@b.c"
+        viewModel.password = "12345678"
+        viewModel.phone = "+7999"
+        let result = await viewModel.submit()
+        XCTAssertFalse(result)
+        XCTAssertNotNil(viewModel.errorMessage)
+        XCTAssertTrue(viewModel.errorMessage!.lowercased().contains("фамили"))
+    }
+
+    func test_submit_setsErrorWhenPasswordTooShort() async {
+        let viewModel = AuthViewModel()
+        viewModel.isRegistering = true
+        viewModel.firstName = "John"
+        viewModel.lastName = "Doe"
+        viewModel.email = "a@b.c"
+        viewModel.password = "1234"
+        viewModel.phone = "+7999"
+        let result = await viewModel.submit()
+        XCTAssertFalse(result)
+        XCTAssertNotNil(viewModel.errorMessage)
+        XCTAssertTrue(viewModel.errorMessage!.contains("8"))
+    }
 }
