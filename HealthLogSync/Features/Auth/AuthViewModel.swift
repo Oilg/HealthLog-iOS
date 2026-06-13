@@ -52,14 +52,44 @@ final class AuthViewModel: ObservableObject {
 
     // MARK: - Manual login
 
+    /// Minimum password length enforced both locally and by the backend.
+    static let minimumPasswordLength = 8
+
     var isSubmitDisabled: Bool {
         if isLoading { return true }
         if email.isEmpty || password.isEmpty { return true }
-        if isRegistering, firstName.isEmpty || lastName.isEmpty || phone.isEmpty { return true }
+        if isRegistering, firstName.trimmingCharacters(in: .whitespaces).isEmpty
+            || lastName.trimmingCharacters(in: .whitespaces).isEmpty
+            || phone.isEmpty { return true }
         return false
     }
 
+    /// Non-nil when the password is too short during registration.
+    var passwordHint: String? {
+        guard isRegistering, !password.isEmpty,
+              password.count < Self.minimumPasswordLength else { return nil }
+        return "Минимум \(Self.minimumPasswordLength) символов"
+    }
+
+    /// Returns a localized error string if client-side validation fails, nil otherwise.
+    private func localValidationError() -> String? {
+        guard isRegistering else { return nil }
+        let trimmedFirst = firstName.trimmingCharacters(in: .whitespaces)
+        let trimmedLast = lastName.trimmingCharacters(in: .whitespaces)
+        if trimmedFirst.isEmpty { return "Имя не может быть пустым" }
+        if trimmedLast.isEmpty { return "Фамилия не может быть пустой" }
+        if password.count < Self.minimumPasswordLength {
+            return "Пароль должен содержать минимум \(Self.minimumPasswordLength) символов"
+        }
+        return nil
+    }
+
     func submit() async -> Bool {
+        if let validationError = localValidationError() {
+            errorMessage = validationError
+            return false
+        }
+
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }

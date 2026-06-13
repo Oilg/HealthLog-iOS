@@ -88,8 +88,7 @@ final class APIClient {
             }
 
             guard (200 ..< 300).contains(http.statusCode) else {
-                let apiError = try? decoder.decode(APIError.self, from: data)
-                throw APIClientError.serverError(apiError?.detail ?? "Ошибка сервера \(http.statusCode)")
+                throw APIClientError.serverError(Self.parseErrorMessage(from: data, statusCode: http.statusCode))
             }
 
             // 204 No Content — decode from empty JSON object
@@ -105,6 +104,64 @@ final class APIClient {
         } catch {
             throw APIClientError.networkError(error)
         }
+    }
+
+    // MARK: - Error parsing
+
+    /// Tries to extract a human-readable message from the raw response body.
+    /// Handles both `{"detail": "..."}` (FastAPI HTTPException) and
+    /// `[{"type":..., "msg":..., "loc":...}]` (Pydantic validation errors).
+    private static func parseErrorMessage(from data: Data, statusCode: Int) -> String {
+        let decoder = JSONDecoder()
+
+        // Try Pydantic array first
+        if let items = try? decoder.decode([ValidationErrorItem].self, from: data), !items.isEmpty {
+            return items
+                .map { Self.localizedValidationMessage(for: $0) }
+                .joined(separator: "\n")
+        }
+
+        // Try standard FastAPI detail string
+        if let apiError = try? decoder.decode(APIError.self, from: data) {
+            return apiError.detail
+        }
+
+        return "Ошибка сервера \(statusCode)"
+    }
+
+    /// Maps a Pydantic validation error item to a Russian user-facing string.
+    private static func localizedValidationMessage(for item: ValidationErrorItem) -> String {
+        let field = item.fieldName
+
+        // Password length
+        if item.type == "string_too_short" && field.contains("password") {
+            let minLen = item.ctx?["min_length"]?.intValue ?? AuthViewModel.minimumPasswordLength
+            return "Пароль должен содержать минимум \(minLen) символов"
+        }
+        if item.type == "string_too_long" && field.contains("password") {
+            return "Пароль слишком длинный"
+        }
+
+        // Email
+        if field.contains("email") {
+            return "Некорректный формат email"
+        }
+
+        // Names
+        if field.contains("first_name") {
+            return "Имя не может быть пустым"
+        }
+        if field.contains("last_name") {
+            return "Фамилия не может быть пустой"
+        }
+
+        // Phone
+        if field.contains("phone") {
+            return "Некорректный формат телефона"
+        }
+
+        // Fallback — return raw message without Pydantic boilerplate
+        return item.msg
     }
 
     private func refreshTokens() async throws -> Bool {
